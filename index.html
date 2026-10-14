@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statistics — Homeworks</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #fbcfe8 0%, #e0e7ff 50%, #93c5fd 100%);
+      --glass-bg: rgba(255, 255, 255, 0.48);
+      --glass-border: rgba(255, 255, 255, 0.75);
+      --glass-shadow: 0 20px 40px rgba(147, 197, 253, 0.25);
+
+      --accent-purple: #7c3aed;
+      --accent-purple-glow: rgba(124, 58, 237, 0.25);
+      --accent-emerald: #059669;
+      --accent-cyan: #0284c7;
+
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #64748b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      min-height: 100%;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg-gradient);
+      background-attachment: fixed;
+      color: var(--text-main);
+    }
+    a { color: inherit; }
+    :focus-visible { outline: 2px solid var(--accent-purple); outline-offset: 2px; }
+
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+    }
+
+    header {
+      position: sticky; top: 1.5vh; z-index: 10;
+      width: 90%; max-width: 1050px; margin: 1.5vh auto 0;
+      border-radius: 20px; padding: 0.7rem 2rem;
+      display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1.5rem;
+    }
+    .header-badge {
+      background: linear-gradient(135deg, #7c3aed, #4f46e5); color: white;
+      font-size: 0.72rem; font-weight: 800; padding: 0.3rem 0.75rem; border-radius: 9999px;
+      letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap;
+    }
+    .header-title {
+      font-size: 1rem; font-weight: 800; text-align: center;
+      background: linear-gradient(to right, #4c1d95, #1e3a8a);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .header-formula {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; font-weight: 700; color: var(--accent-cyan);
+      background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.8);
+      padding: 0.3rem 0.8rem; border-radius: 10px; white-space: nowrap;
+    }
+
+    .layout {
+      width: 90%; max-width: 1050px; margin: 1.6rem auto 3rem;
+      display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 1.5rem; align-items: start;
+    }
+
+    .side-deck {
+      position: sticky; top: 6.2rem;
+      border-radius: 20px; padding: 1.3rem 1rem;
+      display: flex; flex-direction: column; gap: 1.1rem;
+    }
+    .who { font-size: 0.95rem; font-weight: 800; }
+    .intro { font-size: 0.8rem; line-height: 1.55; color: var(--text-muted); }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.35); border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 12px; padding: 0.7rem 0.6rem; display: flex; justify-content: space-around; text-align: center;
+    }
+    .stat b { display: block; font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; color: var(--accent-purple); }
+    .stat span { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); }
+
+    .nav { display: flex; flex-direction: column; gap: 0.45rem; }
+    .nav a, .nav span {
+      display: block; text-decoration: none; border-radius: 10px; padding: 0.55rem 0.7rem;
+      font-size: 0.75rem; font-weight: 700; line-height: 1.35;
+      background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.6); color: var(--text-main);
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s;
+    }
+    .nav a:hover { transform: translateY(-2px); background: rgba(255, 255, 255, 0.85); }
+    .nav span { color: var(--text-dim); background: rgba(255, 255, 255, 0.3); border-style: dashed; border-color: rgba(124, 58, 237, 0.3); }
+    .nav .n { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--accent-purple); margin-right: 0.35rem; }
+
+    .list { display: flex; flex-direction: column; gap: 1.2rem; }
+
+    .hw {
+      border-radius: 20px; padding: 1.4rem 1.6rem;
+      display: grid; grid-template-columns: 4.6rem minmax(0, 1fr); gap: 1.3rem;
+      background: rgba(255, 255, 255, 0.6);
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s;
+    }
+    .hw:hover { transform: translateY(-3px); box-shadow: 0 24px 44px rgba(124, 58, 237, 0.18); }
+    .num {
+      width: 4.6rem; height: 4.6rem; border-radius: 16px;
+      background: linear-gradient(135deg, #a78bfa, #818cf8);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace; font-size: 1.8rem; font-weight: 700; color: var(--text-main);
+      box-shadow: 0 4px 12px var(--accent-purple-glow);
+    }
+    .num small { font-family: 'Inter', sans-serif; font-size: 0.56rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+    .tag { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-purple); }
+    .hw h2 { font-size: 1.2rem; font-weight: 800; line-height: 1.3; margin-top: 0.15rem; }
+    .hw h2 a { text-decoration: none; }
+    .hw h2 a:hover { color: var(--accent-purple); }
+    .meta { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--accent-cyan); margin-top: 0.2rem; }
+    .hw p { font-size: 0.86rem; line-height: 1.6; color: var(--text-muted); margin-top: 0.5rem; max-width: 70ch; }
+    .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.8rem; }
+    .chip {
+      font-size: 0.68rem; font-weight: 700; border-radius: 9999px; padding: 0.18rem 0.6rem;
+      background: rgba(124, 58, 237, 0.1); color: #5b21b6; border: 1px solid rgba(124, 58, 237, 0.2);
+    }
+    .open {
+      display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 1rem; height: 38px; padding: 0 1.1rem;
+      border-radius: 10px; text-decoration: none; font-size: 0.8rem; font-weight: 700; color: var(--text-main);
+      background: linear-gradient(135deg, #34d399, #6ee7b7); box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s;
+    }
+    .open:hover { transform: translateY(-2px); background: linear-gradient(135deg, #6ee7b7, #a7f3d0); }
+
+    .hw.soon { background: rgba(255, 255, 255, 0.25); border: 2px dashed rgba(124, 58, 237, 0.3); box-shadow: none; }
+    .hw.soon:hover { transform: none; box-shadow: none; }
+    .hw.soon .num { background: rgba(255, 255, 255, 0.5); color: var(--text-dim); box-shadow: none; }
+    .hw.soon h2 { color: var(--text-dim); }
+
+    footer { font-size: 0.75rem; color: var(--text-muted); text-align: center; }
+
+    @media (max-width: 860px) {
+      header { position: static; width: auto; margin: 1rem 1rem 0; grid-template-columns: 1fr; text-align: center; justify-items: center; gap: 0.5rem; padding: 0.8rem 1rem; }
+      .layout { width: auto; margin: 1rem 1rem 2rem; grid-template-columns: 1fr; }
+      .side-deck { position: static; }
+      .hw { grid-template-columns: 1fr; gap: 0.8rem; padding: 1.2rem; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body>
+
+  <header class="glass">
+    <div class="header-badge" id="badge"></div>
+    <div class="header-title" id="course"></div>
+    <div class="header-formula" id="formula"></div>
+  </header>
+
+  <div class="layout">
+    <aside class="side-deck glass">
+      <div class="who" id="student"></div>
+      <p class="intro" id="intro"></p>
+      <div class="stat" id="count"></div>
+      <nav class="nav" id="nav" aria-label="Homeworks"></nav>
+    </aside>
+
+    <main class="list" id="list"></main>
+  </div>
+
+<script>
+const SITE = {
+  badge: 'A.Y. 2026/27',
+  course: 'Statistics Homeworks',
+  formula: 'Q = k · G',
+  student: '',
+  intro: ''
+};
+
+const HOMEWORKS = [
+  {
+    number: 1,
+    title: 'Private key → public key on a toy elliptic curve',
+    file: 'homework_1.html',
+    date: '',
+    description: 'Elliptic-curve scalar multiplication Q = k·G on y² = x³ + 7 (mod 17), with repeated addition and double-and-add, a slow-motion visualiser with the real-curve analogy and a statistical exploration of the resulting points.',
+    topics: ['secp256k1 (toy version)', 'point addition', 'double-and-add', 'χ² test', 'entropy', 'avalanche']
+  },
+  {
+    number: 2,
+    title: 'From wallet seed to Ethereum address',
+    file: 'homework_2.html',
+    date: '',
+    description: 'The Ethereum wallet pipeline step by step: mnemonic phrase, seed, key derivation, public key, address and checksum, with the statistical properties of each step and the historical context of the standards.',
+    topics: ['BIP-39', 'BIP-32', 'BIP-44', 'secp256k1', 'Keccak-256', 'EIP-55']
+  },
+];
+
+const $ = id => document.getElementById(id);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+
+$('badge').textContent = SITE.badge;
+$('course').textContent = SITE.course;
+$('formula').textContent = SITE.formula;
+$('student').textContent = SITE.student;
+$('student').hidden = !SITE.student;
+$('intro').textContent = SITE.intro;
+$('intro').hidden = !SITE.intro;
+
+const ready = HOMEWORKS.filter(h => h.file);
+$('count').innerHTML = `<div><b>${ready.length}</b><span>published</span></div>` +
+  (HOMEWORKS.length > ready.length ? `<div><b>${HOMEWORKS.length - ready.length}</b><span>coming soon</span></div>` : '');
+
+$('nav').innerHTML = HOMEWORKS.map(h => h.file
+  ? `<a href="${esc(h.file)}"><b class="n">${pad(h.number)}</b>${esc(h.title)}</a>`
+  : `<span><b class="n">${pad(h.number)}</b>coming soon</span>`).join('');
+
+$('list').innerHTML = HOMEWORKS.map(h => {
+  if (!h.file) return `
+    <article class="hw glass soon">
+      <div class="num">${pad(h.number)}</div>
+      <div><div class="tag">Homework ${h.number} · coming soon</div><h2>${esc(h.title || 'Coming soon')}</h2>${h.description ? `<p>${esc(h.description)}</p>` : ''}</div>
+    </article>`;
+  return `
+    <article class="hw glass">
+      <div class="num">${pad(h.number)}<small>HMWK</small></div>
+      <div>
+        <div class="tag">Homework ${h.number}</div>
+        <h2><a href="${esc(h.file)}">${esc(h.title)}</a></h2>
+        ${h.date ? `<div class="meta">${esc(h.date)}</div>` : ''}
+        <p>${esc(h.description)}</p>
+        <div class="chips">${(h.topics || []).map(t => `<span class="chip">${esc(t)}</span>`).join('')}</div>
+        <a class="open" href="${esc(h.file)}">Open homework ${h.number} ▶</a>
+      </div>
+    </article>`;
+}).join('') + `<footer>Last updated: ${new Date(document.lastModified).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</footer>`;
+</script>
+</body>
+</html>
