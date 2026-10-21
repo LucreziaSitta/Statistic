@@ -196,6 +196,14 @@ const HOMEWORKS = [
     description: 'The Ethereum wallet pipeline step by step: mnemonic phrase, seed, key derivation, public key, address and checksum, with the statistical properties of each step and the historical context of the standards.',
     topics: ['BIP-39', 'BIP-32', 'BIP-44', 'secp256k1', 'Keccak-256', 'EIP-55']
   },
+  {
+    number: 3,
+    title: 'Toy ECC encryption vs the Caesar cipher',
+    file: 'homework_3.html',
+    date: '',
+    description: 'A toy ECIES-style encryption on secp256k1 with a deliberately small private key, compared with the Caesar cipher on the same message; statistical attack on Caesar with a language model learned from a corpus (χ², bigrams, success rate by text length) and attacks on the restricted ECC key (exhaustive search, baby-step giant-step).',
+    topics: ['secp256k1', 'ECDH + keystream', 'Caesar cipher', 'χ² test', 'bigrams', 'entropy', 'baby-step giant-step']
+  },
 ];
 
 const $ = id => document.getElementById(id);
