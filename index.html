@@ -204,6 +204,14 @@ const HOMEWORKS = [
     description: 'A toy ECIES-style encryption on secp256k1 with a deliberately small private key, compared with the Caesar cipher on the same message; statistical attack on Caesar with a language model learned from a corpus (χ², bigrams, success rate by text length) and attacks on the restricted ECC key (exhaustive search, baby-step giant-step).',
     topics: ['secp256k1', 'ECDH + keystream', 'Caesar cipher', 'χ² test', 'bigrams', 'entropy', 'baby-step giant-step']
   },
+  {
+    number: 4,
+    title: 'Stochastic penetration process: LLN and CLT',
+    file: 'homework_4.html',
+    date: '',
+    description: 'n systems and m attackers with IID Bernoulli and Rademacher increments: sample trajectories and distributions of Sₙ, Sₙ/n and Sₙ/√n, convergence in probability of the average (Law of Large Numbers, Chebyshev), variance under the three normalizations, convergence of Sₙ/√n to N(0, 1) (Central Limit Theorem, Q–Q plot, Kolmogorov–Smirnov, Berry–Esseen) and the effect of n and m on the aggregate score.',
+    topics: ['Bernoulli', 'Rademacher', 'Monte Carlo', 'LLN', 'Chebyshev', 'variance scaling', 'CLT', 'Q–Q plot']
+  },
 ];
 
 const $ = id => document.getElementById(id);
