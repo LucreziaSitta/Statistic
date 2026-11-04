@@ -212,6 +212,14 @@ const HOMEWORKS = [
     description: 'n systems and m attackers with IID Bernoulli and Rademacher increments: sample trajectories and distributions of Sₙ, Sₙ/n and Sₙ/√n, convergence in probability of the average (Law of Large Numbers, Chebyshev), variance under the three normalizations, convergence of Sₙ/√n to N(0, 1) (Central Limit Theorem, Q–Q plot, Kolmogorov–Smirnov, Berry–Esseen) and the effect of n and m on the aggregate score.',
     topics: ['Bernoulli', 'Rademacher', 'Monte Carlo', 'LLN', 'Chebyshev', 'variance scaling', 'CLT', 'Q–Q plot']
   },
+  {
+    number: 5,
+    title: 'Welford\u2019s recurrences and sampling statistics',
+    file: 'homework_5.html',
+    date: '',
+    description: 'Derivation of Welford\u2019s recurrences for the sum of squares and the variance, following Knuth\u2019s recurrence for the mean, with the three-line code and a worked example; then m hackers attacking n systems with scores from 0 to 10: the averages of their sampling means and variances compared with μ and σ², and how the spread of the estimates shrinks as n grows.',
+    topics: ['Welford', 'Knuth', 'sum of squares', 'sample variance', 'unbiased estimators', 'standard error']
+  },
 ];
 
 const $ = id => document.getElementById(id);
