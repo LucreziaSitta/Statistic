@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Independence Lab — HMWK 7</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #fbcfe8 0%, #e0e7ff 50%, #93c5fd 100%);
+      --glass-bg: rgba(255, 255, 255, 0.48);
+      --glass-border: rgba(255, 255, 255, 0.75);
+      --glass-shadow: 0 20px 40px rgba(147, 197, 253, 0.25);
+
+      --accent-purple: #7c3aed;
+      --accent-purple-glow: rgba(124, 58, 237, 0.25);
+      --accent-emerald: #059669;
+      --accent-emerald-glow: rgba(5, 150, 105, 0.25);
+      --accent-cyan: #0284c7;
+
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #64748b;
+
+      --c-ecc: #7c3aed;
+      --c-caesar: #d97706;
+      --c-cmp: #0284c7;
+      --c-bayes: #059669;
+      --c-atk: #e11d48;
+      --c-ph: #4f46e5;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    [hidden] { display: none !important; }
+
+    body, html {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg-gradient); color: var(--text-main);
+    }
+
+    #app-container { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+    header {
+      position: absolute; top: 1.5vh; left: 50%; transform: translateX(-50%); z-index: 10;
+      width: 90%; max-width: 1050px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border); border-radius: 20px; padding: 0.7rem 2rem; box-shadow: var(--glass-shadow);
+      display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1.5rem;
+    }
+    .header-badge {
+      background: linear-gradient(135deg, #7c3aed, #4f46e5); color: white; font-size: 0.72rem; font-weight: 800;
+      padding: 0.3rem 0.75rem; border-radius: 9999px; letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    a.header-badge { text-decoration: none; display: inline-block; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s; }
+    a.header-badge:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35); }
+    .header-title {
+      font-size: 1rem; font-weight: 800; background: linear-gradient(to right, #4c1d95, #1e3a8a);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; white-space: nowrap; text-align: center;
+    }
+    .header-formula {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.8); padding: 0.3rem 0.8rem; border-radius: 10px;
+      color: var(--accent-cyan); font-weight: 700; white-space: nowrap; justify-self: end;
+    }
+
+    .side-deck {
+      position: absolute; top: 6.8rem; left: 1.5rem; z-index: 10; width: 230px; height: calc(100vh - 8.2rem);
+      background: rgba(255, 255, 255, 0.42);
+      border: 1px solid var(--glass-border); border-radius: 20px; padding: 1.1rem 0.9rem; box-shadow: var(--glass-shadow);
+      display: flex; flex-direction: column; justify-content: space-between; gap: 0.8rem; overflow-y: auto;
+    }
+    .deck-top-section { display: flex; flex-direction: column; gap: 0.85rem; }
+    .deck-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+    .back { font-size: 0.78rem; font-weight: 700; text-decoration: none; color: var(--accent-purple); }
+    .back:hover { text-decoration: underline; }
+
+    .btn-action {
+      width: 100%; height: 36px; padding: 0 0.5rem; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.6);
+      font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.75rem; cursor: pointer; color: var(--text-main);
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-action:hover { transform: translateY(-2px); }
+    .btn-action:active { transform: translateY(0); }
+    .btn-action:disabled { opacity: 0.5; cursor: default; transform: none; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, a:focus-visible { outline: 2px solid var(--accent-purple); outline-offset: 2px; }
+    .btn-step { background: linear-gradient(135deg, #7c3aed, #4f46e5); color: white; border: none; box-shadow: 0 4px 12px var(--accent-purple-glow); }
+    .btn-play { background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; box-shadow: 0 4px 12px var(--accent-emerald-glow); }
+    .btn-danger { background: linear-gradient(135deg, #e11d48, #f43f5e); color: white; border: none; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.22); }
+    .btn-subtle { background: rgba(255, 255, 255, 0.6); color: var(--text-main); }
+    .btn-subtle:hover { background: rgba(255, 255, 255, 0.85); }
+    .btn-inline { width: auto; height: 32px; padding: 0 0.9rem; font-size: 0.72rem; }
+
+    .slider-container {
+      display: flex; flex-direction: column; gap: 0.4rem; background: rgba(255, 255, 255, 0.35);
+      padding: 0.7rem 0.6rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    .field-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-align: center; letter-spacing: 0.03em; }
+    .k-input-box {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; font-weight: 800; color: var(--accent-purple);
+      background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(124, 58, 237, 0.3); padding: 0.2rem; border-radius: 6px;
+      width: 100%; text-align: center; outline: none;
+    }
+    textarea.k-input-box { text-align: left; font-size: 0.74rem; font-weight: 600; color: var(--text-main); min-height: 92px; resize: vertical; padding: 0.4rem; line-height: 1.4; font-family: 'Inter', sans-serif; }
+    select.k-input-box { font-size: 0.74rem; padding: 0.3rem; cursor: pointer; }
+    .idx-row { display: grid; grid-template-columns: 28px 1fr 28px 28px; gap: 0.25rem; }
+    .idx-row .btn-action { height: 28px; padding: 0; }
+    .side-note { font-size: 0.66rem; color: var(--text-dim); text-align: center; line-height: 1.35; }
+
+    .spaces { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3rem; text-align: center; }
+    .spaces div { background: rgba(255, 255, 255, 0.45); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 10px; padding: 0.35rem 0.2rem; font-size: 0.6rem; font-weight: 700; color: var(--text-muted); }
+    .spaces b { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; color: var(--accent-purple); }
+
+    .btn-drawer-toggle { width: 100%; height: 40px; background: rgba(124, 58, 237, 0.12); color: var(--accent-purple); border: 1px solid rgba(124, 58, 237, 0.25); font-size: 0.78rem; }
+
+    .stage-area {
+      position: absolute; top: 6.8rem; left: calc(1.5rem + 230px + 1.5rem); right: 1.5rem; bottom: 1.4rem; z-index: 5;
+      display: flex; flex-direction: column; gap: 0.9rem;
+    }
+    .steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.6rem; flex: 0 0 auto; }
+    .node {
+      background: rgba(255, 255, 255, 0.55);
+      border: 2px solid rgba(255, 255, 255, 0.85); border-radius: 14px; padding: 0.55rem 0.7rem; cursor: pointer; text-align: left;
+      font-family: inherit; color: inherit; min-width: 0;
+      box-shadow: 0 10px 24px rgba(124, 58, 237, 0.08); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .node:hover { transform: translateY(-2px); }
+    .node .n-tag { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+    .node .n-name { font-size: 0.84rem; font-weight: 800; margin: 0.1rem 0; line-height: 1.2; }
+    .node .n-val { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .node.active { border-color: var(--accent-emerald); box-shadow: 0 0 0 4px var(--accent-emerald-glow), 0 16px 30px rgba(5, 150, 105, 0.18); }
+
+    .detail {
+      flex: 1 1 auto; min-height: 0; overflow-y: auto;
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.85); border-radius: 18px; padding: 1.2rem 1.5rem 1.6rem; box-shadow: 0 16px 36px rgba(124, 58, 237, 0.14);
+    }
+    .detail section { display: none; }
+    .detail section.on { display: block; }
+    .d-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+    .d-tag { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-purple); }
+    .d-title { font-size: 1.15rem; font-weight: 800; margin: 0.1rem 0 0.4rem; }
+    .d-sub { font-size: 0.86rem; font-weight: 800; margin: 1.3rem 0 0.3rem; padding-top: 0.9rem; border-top: 1px solid rgba(203, 213, 225, 0.6); color: var(--text-main); }
+    .d-sub.first { border-top: none; padding-top: 0; margin-top: 0.8rem; }
+    .d-mini { font-size: 0.76rem; font-weight: 800; color: var(--text-muted); margin: 0.7rem 0 0.25rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .detail p { font-size: 0.85rem; line-height: 1.55; color: var(--text-muted); max-width: 95ch; margin: 0.35rem 0; }
+    .detail p b, .detail li b { color: var(--text-main); }
+    .detail ul, .detail ol { padding-left: 1.2rem; font-size: 0.84rem; line-height: 1.55; color: var(--text-muted); max-width: 95ch; }
+    .detail li { margin: 0.25rem 0; }
+
+    .chip { display: inline-block; font-size: 0.66rem; font-weight: 800; border-radius: 9999px; padding: 0.12rem 0.55rem; margin: 0 0.2rem 0.2rem 0; color: white; white-space: nowrap; }
+    .chip.ecc { background: var(--c-ecc); } .chip.caesar { background: var(--c-caesar); } .chip.cmp { background: var(--c-cmp); }
+    .chip.bayes { background: var(--c-bayes); } .chip.atk { background: var(--c-atk); } .chip.ph { background: var(--c-ph); } .chip.enc { background: #64748b; }
+
+    .val {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: var(--text-main); background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(203, 213, 225, 0.6); border-radius: 8px; padding: 0.45rem 0.65rem; margin: 0.4rem 0; word-break: break-all; line-height: 1.6;
+    }
+    .val .lbl { display: block; font-family: 'Inter', sans-serif; font-size: 0.68rem; font-weight: 700; color: var(--text-dim); word-break: normal; }
+    .msg {
+      font-size: 0.86rem; line-height: 1.5; background: rgba(255, 255, 255, 0.75); border: 1px solid rgba(203, 213, 225, 0.6);
+      border-left: 4px solid var(--accent-purple); border-radius: 8px; padding: 0.6rem 0.85rem; margin: 0.4rem 0; overflow-wrap: anywhere; white-space: pre-wrap;
+    }
+    .msg.caesar { border-left-color: var(--c-caesar); font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; }
+    .msg.bad { border-left-color: var(--c-atk); font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; }
+    .log {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; line-height: 1.6; color: var(--text-main);
+      background: rgba(255, 255, 255, 0.78); border: 1px solid rgba(203, 213, 225, 0.7); border-radius: 10px;
+      padding: 0.8rem 1rem; margin: 0.5rem 0; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 420px; overflow-y: auto;
+    }
+    .log .h { color: var(--accent-purple); font-weight: 700; }
+    .log .ok { color: var(--accent-emerald); font-weight: 700; }
+    .log .er { color: var(--c-atk); font-weight: 700; }
+    .log .dim { color: #94a3b8; }
+    .fade { color: #a0aec0; }
+    .mark { background: rgba(5, 150, 105, 0.16); color: #065f46; border-radius: 3px; padding: 0 2px; }
+    .muted { color: var(--text-muted); font-size: 0.8rem; }
+    .good { color: var(--accent-emerald); font-weight: 700; } .bad { color: #e11d48; font-weight: 700; } .warn { color: #d97706; font-weight: 700; }
+    .note { font-size: 0.8rem; line-height: 1.5; background: rgba(124, 58, 237, 0.07); border: 1px solid rgba(124, 58, 237, 0.2); border-radius: 10px; padding: 0.6rem 0.8rem; margin: 0.6rem 0; color: var(--text-muted); max-width: 95ch; }
+    .note b { color: var(--text-main); }
+    .row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 0.5rem 0; }
+    .row label { font-size: 0.76rem; font-weight: 700; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.35rem; }
+    .grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+    .found { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 0.95rem; color: white; background: linear-gradient(135deg, #059669, #10b981); border-radius: 9px; padding: 0.25rem 0.7rem; }
+
+    .report-table { width: 100%; border-collapse: collapse; font-size: 0.74rem; background: rgba(255, 255, 255, 0.8); border-radius: 10px; overflow: hidden; margin: 0.4rem 0; }
+    .report-table th { background: rgba(124, 58, 237, 0.12); color: var(--accent-purple); padding: 0.45rem; font-weight: 700; text-align: left; border-bottom: 1px solid rgba(203, 213, 225, 0.8); }
+    .report-table td { padding: 0.4rem 0.45rem; border-bottom: 1px solid rgba(241, 245, 249, 0.9); vertical-align: top; color: var(--text-muted); }
+    .report-table td b { color: var(--text-main); }
+    .report-table td.m, .report-table th.m { font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+    .report-table td.c, .report-table th.c { text-align: center; }
+    .report-table td.txt { font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 0; width: 45%; }
+    .report-table tr.sel td { background: rgba(5, 150, 105, 0.1); }
+    .report-table td.hit { background: rgba(5, 150, 105, 0.16); color: #065f46; font-weight: 700; }
+    .report-table td.miss { background: rgba(225, 29, 72, 0.08); color: #9f1239; font-weight: 700; }
+    .report-table.alpha td, .report-table.alpha th { font-family: 'JetBrains Mono', monospace; text-align: center; padding: 0.3rem 0.1rem; }
+    .report-table.alpha th { text-align: left; padding-left: 0.5rem; font-family: 'Inter', sans-serif; width: 4.2rem; }
+    .scroll { overflow-x: auto; }
+    .tbl-scroll { max-height: 360px; overflow-y: auto; }
+
+    .param-input-box {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 700; color: var(--text-main); background: white;
+      border: 1px solid rgba(124, 58, 237, 0.3); padding: 0.35rem 0.5rem; border-radius: 6px; width: 100%; outline: none;
+    }
+    input.param-input-box[type=number] { width: 90px; }
+    textarea.param-input-box { resize: vertical; font-weight: 500; line-height: 1.45; }
+
+    .kpi { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.4rem; margin: 0.5rem 0; }
+    .kpi div { background: rgba(124, 58, 237, 0.05); border: 1px solid rgba(124, 58, 237, 0.15); border-radius: 10px; padding: 0.35rem 0.55rem; font-size: 0.66rem; color: var(--text-muted); }
+    .kpi b { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent-purple); overflow-wrap: anywhere; }
+
+    .bars { display: flex; align-items: flex-end; gap: 2px; height: 100px; border-bottom: 2px solid #cbd5e1; padding-top: 10px; }
+    .bc { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 0; }
+    .bar { width: 100%; max-width: 16px; background: linear-gradient(to top, #7c3aed, #4f46e5); border-radius: 3px 3px 0 0; min-height: 1px; }
+    .bar.alt { background: linear-gradient(to top, #0284c7, #38bdf8); }
+    .bar.amber { background: linear-gradient(to top, #d97706, #fbbf24); }
+    .bar.best { background: linear-gradient(to top, #059669, #34d399); }
+    .bar.cred { background: linear-gradient(to top, #6ee7b7, #a7f3d0); }
+    .bn { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; color: var(--text-muted); }
+    .bl2 { display: flex; gap: 2px; } .bl2 .bn { flex: 1; text-align: center; min-width: 0; }
+
+    .progress { height: 8px; background: rgba(203, 213, 225, 0.6); border-radius: 9999px; overflow: hidden; margin: 0.5rem 0; }
+    .progress div { height: 100%; width: 0; background: linear-gradient(90deg, #7c3aed, #4f46e5); transition: width 0.1s linear; }
+
+    details.more { margin-top: 0.7rem; }
+    details.more summary { cursor: pointer; font-size: 0.8rem; font-weight: 700; color: var(--accent-purple); }
+    details.more[open] summary { margin-bottom: 0.4rem; }
+
+    .drawer-overlay {
+      position: absolute; top: 0; right: -620px; width: 580px; max-width: 100vw; height: 100%; z-index: 30;
+      background: rgba(255, 255, 255, 0.88);
+      border-left: 1px solid var(--glass-border); box-shadow: -15px 0 40px rgba(147, 197, 253, 0.3);
+      transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1); padding: 2rem 1.75rem; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 1.5rem;
+    }
+    .drawer-overlay.open { right: 0; }
+    .drawer-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(203, 213, 225, 0.5); padding-bottom: 0.8rem; }
+    .drawer-title { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
+    .btn-close { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(203, 213, 225, 0.8); background: rgba(255, 255, 255, 0.9); font-weight: 800; cursor: pointer; flex: none; }
+    .drawer-card {
+      background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 16px; padding: 1.1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); display: flex; flex-direction: column; gap: 0.7rem;
+    }
+    .drawer-card-title { font-size: 0.82rem; font-weight: 800; text-transform: uppercase; color: var(--accent-purple); letter-spacing: 0.05em; }
+    .discussion-text { font-size: 0.82rem; line-height: 1.55; color: var(--text-muted); }
+    .discussion-text b, .discussion-text strong { color: var(--text-main); }
+    .discussion-text ul { padding-left: 1.1rem; } .discussion-text li { margin: 0.3rem 0; }
+    .formula { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; color: var(--text-main); background: rgba(124, 58, 237, 0.07); border-radius: 6px; padding: 0.1rem 0.4rem; white-space: nowrap; }
+
+    .timeline { list-style: none; margin-left: 3.6rem; border-left: 2px solid rgba(124, 58, 237, 0.4); }
+    .timeline li { position: relative; padding: 0 0 0.7rem 0.9rem; font-size: 0.78rem; line-height: 1.45; color: var(--text-muted); }
+    .timeline li::before { content: ''; position: absolute; left: -7px; top: 0.3rem; width: 12px; height: 12px; border-radius: 50%; background: var(--accent-purple); }
+    .timeline li.ctx::before { background: white; border: 2px solid #a5b4fc; width: 8px; height: 8px; }
+    .timeline .yr { position: absolute; left: -3.7rem; top: 0.05rem; width: 3.1rem; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: var(--text-main); }
+    .timeline li.ctx .yr { font-weight: 500; color: var(--text-dim); }
+
+    @media (max-width: 1250px) { .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 900px) {
+      body, html { overflow: auto; height: auto; }
+      #app-container { height: auto; overflow: visible; display: flex; flex-direction: column; gap: 1rem; padding: 1rem; }
+      header { position: static; transform: none; width: 100%; grid-template-columns: 1fr; text-align: center; padding: 0.8rem 1rem; gap: 0.5rem; }
+      .header-title { white-space: normal; } .header-formula { justify-self: center; white-space: normal; }
+      .side-deck { position: static; width: 100%; height: auto; }
+      .stage-area { position: static; }
+      .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .detail { overflow: visible; padding: 1rem; }
+      .grid2, .grid3 { grid-template-columns: 1fr; }
+      .drawer-overlay { position: fixed; padding: 1.2rem; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+    .steps { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+    .node { padding: 0.5rem 0.6rem; }
+    .node .n-name { font-size: 0.8rem; }
+    input[type=range] { width: 100%; accent-color: var(--accent-purple); cursor: pointer; }
+    .val-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.68rem; font-weight: 700; color: var(--text-muted); }
+    .val-row b { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--accent-purple); }
+    .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem; }
+    .seg button, .tab {
+      height: 30px; border-radius: 9px; border: 1px solid rgba(124, 58, 237, 0.25); background: rgba(255, 255, 255, 0.75);
+      font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.72rem; color: var(--text-main); cursor: pointer; padding: 0 0.7rem;
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s;
+    }
+    .seg button:hover, .tab:hover { transform: translateY(-1px); }
+    .seg button.on, .tab.on { background: linear-gradient(135deg, #7c3aed, #4f46e5); color: white; border-color: transparent; box-shadow: 0 4px 12px var(--accent-purple-glow); }
+    .tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.5rem 0; align-items: center; }
+    .tabs .lbl { font-size: 0.74rem; font-weight: 700; color: var(--text-muted); margin-right: 0.2rem; }
+    .presets { display: grid; gap: 0.3rem; }
+    .presets .btn-action { height: 30px; font-size: 0.68rem; justify-content: flex-start; padding: 0 0.6rem; }
+    .presets .btn-action b { font-family: 'JetBrains Mono', monospace; color: var(--accent-purple); margin-left: auto; font-size: 0.64rem; }
+    .num-row { display: grid; grid-template-columns: 1fr 28px; gap: 0.25rem; }
+    .num-row .btn-action { height: 28px; padding: 0; }
+
+    .chart { background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(203, 213, 225, 0.7); border-radius: 12px; padding: 0.35rem 0.4rem 0.2rem; margin: 0.45rem 0; }
+    .chart svg { display: block; width: 100%; height: auto; }
+    .chart-title { font-size: 0.78rem; font-weight: 800; color: var(--text-main); margin: 0.6rem 0 0.1rem; }
+    .legend { display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem; font-size: 0.7rem; color: var(--text-muted); margin: 0.15rem 0 0.2rem; }
+    .legend span { display: inline-flex; align-items: center; gap: 0.3rem; }
+    .legend i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; }
+    .legend i.box { height: 10px; width: 14px; border-radius: 3px; }
+    .legend i.dash { height: 0; border-top: 2px dashed; background: none !important; }
+
+    .card2 { background: rgba(255, 255, 255, 0.72); border: 1px solid rgba(203, 213, 225, 0.6); border-radius: 14px; padding: 0.8rem 0.95rem; }
+    .card2 h4 { font-size: 0.86rem; font-weight: 800; margin-bottom: 0.25rem; color: var(--text-main); }
+    .card2 p, .card2 li { font-size: 0.8rem !important; }
+    .card2 .big { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--accent-purple); margin: 0.2rem 0 0.35rem; }
+    .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; margin: 0.6rem 0; }
+    .trio div { background: rgba(124, 58, 237, 0.06); border: 1px solid rgba(124, 58, 237, 0.18); border-radius: 12px; padding: 0.55rem 0.7rem; }
+    .trio span { display: block; font-size: 0.66rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); }
+    .trio strong { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.92rem; color: var(--text-main); margin: 0.15rem 0; }
+    .trio small { font-size: 0.72rem; color: var(--text-muted); }
+    .trio .S { border-color: rgba(217, 119, 6, 0.35); background: rgba(217, 119, 6, 0.07); }
+    .trio .A { border-color: rgba(2, 132, 199, 0.35); background: rgba(2, 132, 199, 0.07); }
+    .trio .Z { border-color: rgba(124, 58, 237, 0.35); background: rgba(124, 58, 237, 0.07); }
+    .chip.s { background: #d97706; } .chip.a { background: #0284c7; } .chip.z { background: #7c3aed; } .chip.g { background: #059669; } .chip.r { background: #e11d48; }
+    .busy { font-size: 0.66rem; color: var(--text-dim); text-align: center; min-height: 0.9rem; }
+
+    @media (max-width: 1250px) { .steps { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    @media (max-width: 900px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } .trio { grid-template-columns: 1fr; } }
+    .steps { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+    @media (max-width: 900px) { .steps { grid-template-columns: 1fr !important; } }
+  </style>
+</head>
+<body>
+
+<div id="app-container">
+
+  <header>
+    <div><a class="header-badge" href="index.html" title="Back to all homeworks">◀ HMWK 7</a></div>
+    <div class="header-title">Statistical Independence &amp; the Chi-Square Test</div>
+    <div></div>
+  </header>
+
+  <div class="side-deck">
+    <div class="deck-top-section">
+      <a class="back" href="index.html">← All homeworks</a>
+
+      <div class="slider-container">
+        <span class="field-label">DATASET</span>
+        <select id="dsIn" class="k-input-box">
+          <option value="dep">Login events (synthetic, 270 records)</option>
+          <option value="ind">Exactly independent table (270)</option>
+          <option value="rnd">Random sample under independence</option>
+        </select>
+        <span class="field-label">SEED (random sample)</span>
+        <div class="num-row">
+          <input type="number" id="seedIn" class="k-input-box" min="0" value="2711" aria-label="Seed">
+          <button class="btn-action btn-subtle" id="seedRand" title="New random seed" aria-label="New random seed">⚄</button>
+        </div>
+        <span class="field-label">SIGNIFICANCE LEVEL α</span>
+        <select id="alphaIn" class="k-input-box">
+          <option value="0.1">0.10</option>
+          <option value="0.05" selected>0.05</option>
+          <option value="0.01">0.01</option>
+        </select>
+      </div>
+
+      <div class="spaces" aria-label="Main results">
+        <div><b id="sideChi">–</b>χ²</div>
+        <div><b id="sideDf">–</b>df</div>
+        <div><b id="sideP">–</b>p-value</div>
+      </div>
+      <div class="side-note" id="sideVerdict"></div>
+    </div>
+  </div>
+
+  <div class="stage-area">
+    <nav class="steps" id="steps" aria-label="Sections"></nav>
+
+    <div class="detail" id="detail">
+
+      <!-- 1 · dataset -->
+      <section id="d0">
+        <div class="d-head"><div><div class="d-tag">Step 1</div><div class="d-title">The bivariate dataset (X, Y)</div></div></div>
+        <p id="dsText"></p>
+        <table class="report-table" id="varTable">
+          <thead><tr><th>variable</th><th>meaning</th><th>categories</th></tr></thead>
+          <tbody>
+            <tr><td><b>X</b></td><td>Where the login came from</td><td>Office, Home VPN, Public Wi-Fi</td></tr>
+            <tr><td><b>Y</b></td><td>Alert level assigned by the monitoring system to the session</td><td>Low, Medium, High</td></tr>
+          </tbody>
+        </table>
+        <p>The statistical unit is one login session. The page starts from the <b>individual records</b>, one line per session, and builds every table by counting them. The records below can be edited, or replaced with any other dataset with two categorical columns: the first line gives the names of the two variables.</p>
+        <div class="grid2">
+          <div><div class="chart-title">First 10 records (shuffled order)</div><div class="scroll"><table class="report-table" id="recTable"></table></div></div>
+          <div>
+            <div class="chart-title">All records (CSV, editable)</div>
+            <textarea id="csvIn" class="param-input-box" rows="11" spellcheck="false" style="font-family:'JetBrains Mono',monospace;font-size:.72rem"></textarea>
+            <div class="row"><button class="btn-action btn-play btn-inline" id="btnCsv">▶ Analyse these records</button><span class="muted" id="csvMsg"></span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2 · table -->
+      <section id="d1">
+        <div class="d-head"><div><div class="d-tag">Step 2</div><div class="d-title">Contingency table, marginal and conditional frequencies</div></div></div>
+        <p>For each record, 1 is added to the cell (i, j) of its pair of categories. With nᵢⱼ the count of cell (i, j), nᵢ₊ the row totals, n₊ⱼ the column totals and N the number of records:</p>
+        <div class="trio">
+          <div class="S"><span>Joint</span><strong>fᵢⱼ = nᵢⱼ / N</strong><small>share of all records in the cell</small></div>
+          <div class="A"><span>Marginal</span><strong>fᵢ₊ = nᵢ₊/N, f₊ⱼ = n₊ⱼ/N</strong><small>each variable on its own</small></div>
+          <div class="Z"><span>Conditional</span><strong>f(yⱼ | xᵢ) = nᵢⱼ / nᵢ₊</strong><small>Y inside one category of X</small></div>
+        </div>
+        <div class="grid2">
+          <div><div class="chart-title">Observed counts nᵢⱼ with margins</div><div class="scroll" id="tObs"></div></div>
+          <div><div class="chart-title">Joint and marginal relative frequencies</div><div class="scroll" id="tJoint"></div></div>
+        </div>
+        <div class="grid2">
+          <div><div class="chart-title">Y given X: f(Y | X), rows sum to 100%</div><div class="scroll" id="tRow"></div></div>
+          <div><div class="chart-title">X given Y: f(X | Y), columns sum to 100%</div><div class="scroll" id="tCol"></div></div>
+        </div>
+        <div class="chart-title">Distribution of Y in each category of X, and overall</div>
+        <div class="legend" id="profLegend"></div>
+        <div class="chart" id="chProf"></div>
+        <div class="note" id="profNote"></div>
+      </section>
+
+      <!-- 3 · expected and chi-square -->
+      <section id="d2">
+        <div class="d-head"><div><div class="d-tag">Step 3</div><div class="d-title">Expected frequencies and the chi-square statistic</div></div></div>
+        <p>If X and Y were independent, every joint frequency would be the product of its marginals, fᵢⱼ = fᵢ₊·f₊ⱼ. Multiplying by N gives the counts expected under independence, with the same margins as the data:</p>
+        <div class="msg"><b>Eᵢⱼ = N · fᵢ₊ · f₊ⱼ = nᵢ₊ · n₊ⱼ / N</b></div>
+        <div class="grid2">
+          <div><div class="chart-title">Expected counts Eᵢⱼ</div><div class="scroll" id="tExp"></div></div>
+          <div><div class="chart-title">Contributions (nᵢⱼ − Eᵢⱼ)² / Eᵢⱼ &nbsp;<span class="muted">▲ observed above expected, ▼ below</span></div><div class="scroll" id="tCon"></div></div>
+        </div>
+        <p>Pearson's statistic adds up the squared gaps, each divided by the expected count:</p>
+        <div class="msg"><b>χ² = Σᵢ Σⱼ (nᵢⱼ − Eᵢⱼ)² / Eᵢⱼ</b>, &nbsp; df = (r − 1)(c − 1)</div>
+        <p>χ² = 0 exactly when the table equals the independence table, and grows with the distance from it. If X and Y are independent in the population and the expected counts are not too small (all ≥ 5 is the usual rule), χ² follows approximately a chi-square distribution with df degrees of freedom. The <b>p-value</b> is the probability, under independence, of a value at least as large as the observed one.</p>
+        <div class="kpi" id="chiKpi"></div>
+        <div class="chart-title">Chi-square distribution with the observed statistic</div>
+        <div class="legend"><span><i style="background:#7c3aed"></i>density of χ² under independence</span><span><i class="box" style="background:rgba(225,29,72,.3)"></i>p-value (area to the right)</span><span><i class="dash" style="color:#0f172a"></i>critical value</span></div>
+        <div class="chart" id="chChi"></div>
+        <div class="note" id="chiNote"></div>
+        <p class="muted">The p-value uses the regularized upper incomplete gamma function, P(χ²_df ≥ x) = Q(df/2, x/2), computed with its series and continued-fraction expansions.</p>
+      </section>
+
+      <!-- 4 · theory and conclusions -->
+      <section id="d3">
+        <div class="d-head"><div><div class="d-tag">Step 4</div><div class="d-title">Independence: theory, interpretation, causality</div></div></div>
+        <div class="grid2">
+          <div class="card2">
+            <h4>In probability</h4>
+            <p>Two events are independent when <span class="formula">P(A ∩ B) = P(A)·P(B)</span>, that is, when P(B) &gt; 0, <span class="formula">P(A | B) = P(A)</span>: knowing that B happened does not change the probability of A. Two discrete random variables are independent when P(X = x, Y = y) = P(X = x)·P(Y = y) for every pair of values. This is an exact property of a model, and it is symmetric in X and Y.</p>
+          </div>
+          <div class="card2">
+            <h4>In statistics</h4>
+            <p>On data the same definition reads fᵢⱼ = fᵢ₊·f₊ⱼ, or equivalently: all the row profiles f(Y | X) are equal to the marginal of Y. In a sample this almost never holds exactly, because of random variation. So the question becomes a test: <b>H₀</b> X and Y are independent in the population, <b>H₁</b> they are not. χ² measures whether the gap from the independence table is larger than chance would produce.</p>
+          </div>
+        </div>
+
+        <div class="d-sub">Interpretation of the current dataset</div>
+        <div class="note" id="interp"></div>
+        <ul>
+          <li>A small p-value says the association is unlikely to be due to chance; it does <b>not</b> say how strong it is. Cramér's V = √(χ² / (N·(min(r, c) − 1))), between 0 and 1, measures the strength, while χ² also grows with N.</li>
+          <li>A large p-value does not prove independence: it only means that the data are compatible with it. With the random sample under independence, about α of the seeds (5% with α = 0.05) still reject H₀: try several seeds.</li>
+          <li>The p-value is not the probability that H₀ is true.</li>
+        </ul>
+
+        <div class="d-sub">Association is not causality</div>
+        <p>The chi-square test detects <b>statistical association</b>: the distribution of Y changes with X. It is symmetric in X and Y, so it cannot even say which one would be the cause, and it cannot say why they are associated. In the login example, more high alerts from public Wi-Fi does not prove that the network <i>causes</i> the alerts:</p>
+        <ul>
+          <li><b>Confounding:</b> sessions from public Wi-Fi may come mostly from staff who travel and use personal or older devices; the device, not the network, could produce the alerts.</li>
+          <li><b>Measurement:</b> the monitoring system may itself give a higher base score to unknown networks, so part of the association is built into how Y is recorded.</li>
+          <li><b>Selection:</b> only sessions that reached the gateway are in the data; blocked attempts are missing.</li>
+        </ul>
+        <p>A causal conclusion would need a design that removes these alternatives, for example comparing the same devices and users across networks, or a controlled experiment. What the test establishes is narrower but still useful: whether the association is larger than sampling noise, and in which cells it is located (the largest contributions in step 3).</p>
+
+        <div class="d-sub">Conclusions</div>
+        <p id="concl"></p>
+      </section>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const sum = a => a.reduce((x, y) => x + y, 0);
+const pct = v => Number.isFinite(v) ? (100 * v).toFixed(1) + '%' : '–';
+const f2 = v => Number.isFinite(v) ? v.toFixed(2) : '–';
+const pfmt = p => !Number.isFinite(p) ? '–' : p >= 0.001 ? p.toFixed(4) : p.toExponential(2);
+
+function mulberry32(a) {
+  return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+
+const XS = ['Office', 'Home VPN', 'Public Wi-Fi'], YS = ['Low', 'Medium', 'High'];
+const DEP = [[80, 28, 12], [47, 28, 15], [21, 20, 19]];
+const IND = [[60, 36, 24], [45, 27, 18], [30, 18, 12]];
+
+function fromCounts(counts, seed) {
+  const recs = [];
+  counts.forEach((row, i) => row.forEach((c, j) => { for (let k = 0; k < c; k++) recs.push([XS[i], YS[j]]); }));
+  const r = mulberry32(seed);
+  for (let i = recs.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [recs[i], recs[j]] = [recs[j], recs[i]]; }
+  return recs;
+}
+function randomIndependent(seed) {
+  const r = mulberry32(seed), px = [120 / 270, 90 / 270, 60 / 270], py = [0.5, 0.3, 0.2], recs = [];
+  const pick = p => { const u = r(); return u < p[0] ? 0 : u < p[0] + p[1] ? 1 : 2; };
+  for (let k = 0; k < 270; k++) recs.push([XS[pick(px)], YS[pick(py)]]);
+  return recs;
+}
+
+/* p-value: P(chi2_df >= x) = Q(df/2, x/2) */
+const LZ = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+function lgamma(z) {
+  if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lgamma(1 - z);
+  z -= 1; let x = LZ[0];
+  for (let i = 1; i < 9; i++) x += LZ[i] / (z + i);
+  const t = z + 7.5;
+  return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+}
+function gammaQ(a, x) {
+  if (x <= 0) return 1;
+  const pre = Math.exp(-x + a * Math.log(x) - lgamma(a));
+  if (x < a + 1) {
+    let s = 1 / a, d = s, ap = a;
+    for (let n = 0; n < 1000 && Math.abs(d) > Math.abs(s) * 1e-16; n++) { ap++; d *= x / ap; s += d; }
+    return Math.max(0, 1 - s * pre);
+  }
+  let b = x + 1 - a, c = 1e300, d = 1 / b, h = d;
+  for (let i = 1; i < 1000; i++) {
+    const an = -i * (i - a); b += 2;
+    d = an * d + b; if (Math.abs(d) < 1e-300) d = 1e-300;
+    c = b + an / c; if (Math.abs(c) < 1e-300) c = 1e-300;
+    d = 1 / d; const del = d * c; h *= del;
+    if (Math.abs(del - 1) < 1e-16) break;
+  }
+  return pre * h;
+}
+const pValue = (chi, df) => df > 0 ? gammaQ(df / 2, chi / 2) : NaN;
+function critical(df, alpha) {
+  let lo = 0, hi = 1000;
+  for (let i = 0; i < 200; i++) { const mid = (lo + hi) / 2; if (pValue(mid, df) > alpha) lo = mid; else hi = mid; }
+  return (lo + hi) / 2;
+}
+const chiDensity = (x, df) => x <= 0 ? (df === 2 ? 0.5 : df < 2 ? NaN : 0) : Math.exp((df / 2 - 1) * Math.log(x) - x / 2 - (df / 2) * Math.log(2) - lgamma(df / 2));
+
+/* parsing and analysis */
+function toCsv(names, recs) { return names.join(',') + '\n' + recs.map(r => r.join(',')).join('\n'); }
+function parseCsv(text) {
+  const lines = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  if (lines.length < 3) throw Error('write a header line and at least two records');
+  const names = lines[0].split(',').map(s => s.trim());
+  if (names.length !== 2) throw Error('the header must have exactly two columns');
+  const recs = lines.slice(1).map((l, k) => {
+    const v = l.split(',').map(s => s.trim());
+    if (v.length !== 2 || !v[0] || !v[1]) throw Error('line ' + (k + 2) + ' must have two non-empty values');
+    return v;
+  });
+  return { names, recs };
+}
+function order(values, preferred) {
+  const seen = [...new Set(values)];
+  return preferred && seen.every(v => preferred.includes(v)) ? preferred.filter(v => seen.includes(v)) : seen;
+}
+function analyse(names, recs) {
+  const xs = order(recs.map(r => r[0]), XS), ys = order(recs.map(r => r[1]), YS);
+  const O = xs.map(() => ys.map(() => 0));
+  for (const [x, y] of recs) O[xs.indexOf(x)][ys.indexOf(y)]++;
+  const N = recs.length, R = O.map(r => sum(r)), C = ys.map((_, j) => sum(O.map(r => r[j])));
+  const E = O.map((r, i) => r.map((_, j) => R[i] * C[j] / N));
+  const K = O.map((r, i) => r.map((o, j) => (o - E[i][j]) ** 2 / E[i][j]));
+  const chi = sum(K.flat()), df = (xs.length - 1) * (ys.length - 1);
+  const k = Math.min(xs.length, ys.length) - 1;
+  return { names, recs, xs, ys, O, N, R, C, E, K, chi, df, p: pValue(chi, df), V: k > 0 ? Math.sqrt(chi / (N * k)) : NaN, minE: Math.min(...E.flat()) };
+}
+
+/* rendering */
+function table(rowsHead, colsHead, cells, rowTot, colTot, grand, corner) {
+  const th = `<thead><tr><th>${corner}</th>${colsHead.map(c => `<th class="m c">${esc(c)}</th>`).join('')}${rowTot ? '<th class="m c">total</th>' : ''}</tr></thead>`;
+  const body = cells.map((r, i) => `<tr><td><b>${esc(rowsHead[i])}</b></td>${r.map(v => `<td class="m c">${v}</td>`).join('')}${rowTot ? `<td class="m c"><b>${rowTot[i]}</b></td>` : ''}</tr>`).join('');
+  const foot = colTot ? `<tr><td><b>total</b></td>${colTot.map(v => `<td class="m c"><b>${v}</b></td>`).join('')}${rowTot ? `<td class="m c"><b>${grand}</b></td>` : ''}</tr>` : '';
+  return `<table class="report-table">${th}<tbody>${body}${foot}</tbody></table>`;
+}
+const COLS = ['#059669', '#d97706', '#e11d48', '#0284c7', '#7c3aed', '#64748b'];
+let A = null, src = 'dep';
+
+function render() {
+  const s = A, alpha = Number($('alphaIn').value), xn = s.names[0], yn = s.names[1];
+  $('recTable').innerHTML = `<thead><tr><th class="m c">#</th><th>${esc(xn)}</th><th>${esc(yn)}</th></tr></thead><tbody>` +
+    s.recs.slice(0, 10).map((r, i) => `<tr><td class="m c">${i + 1}</td><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('') + '</tbody>';
+
+  const corner = `${esc(xn)} \\ ${esc(yn)}`;
+  $('tObs').innerHTML = table(s.xs, s.ys, s.O, s.R, s.C, s.N, corner);
+  $('tJoint').innerHTML = table(s.xs, s.ys, s.O.map(r => r.map(v => pct(v / s.N))), s.R.map(v => pct(v / s.N)), s.C.map(v => pct(v / s.N)), '100%', corner);
+  $('tRow').innerHTML = table(s.xs.concat(['all (marginal)']), s.ys, s.O.map((r, i) => r.map(v => pct(v / s.R[i]))).concat([s.C.map(v => pct(v / s.N))]), null, null, null, corner);
+  $('tCol').innerHTML = table(s.xs, s.ys.concat(['all (marginal)']), s.O.map((r, i) => r.map((v, j) => pct(v / s.C[j])).concat([pct(s.R[i] / s.N)])), null, null, null, corner);
+
+  const groups = s.xs.map((x, i) => [x, s.O[i].map(v => v / s.R[i])]).concat([['all', s.C.map(v => v / s.N)]]);
+  $('profLegend').innerHTML = s.ys.map((y, j) => `<span><i class="box" style="background:${COLS[j % COLS.length]}"></i>${esc(y)}</span>`).join('');
+  const W = 760, rowH = 34, H = groups.length * rowH + 40, L = 110, Rr = 20;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" font-family="Inter, sans-serif" font-size="11" fill="#475569">`;
+  groups.forEach(([g, prof], i) => {
+    const y = 10 + i * rowH; let x = L;
+    svg += `<text x="${L - 8}" y="${y + 17}" text-anchor="end" font-weight="${g === 'all' ? 800 : 600}" fill="#0f172a">${esc(g === 'all' ? 'all records' : g)}</text>`;
+    prof.forEach((p, j) => {
+      const w = p * (W - L - Rr);
+      svg += `<rect x="${x}" y="${y}" width="${w}" height="24" fill="${COLS[j % COLS.length]}" opacity="${g === 'all' ? 1 : 0.8}"/>`;
+      if (w > 34) svg += `<text x="${x + w / 2}" y="${y + 16}" text-anchor="middle" fill="white" font-weight="700">${(100 * p).toFixed(0)}%</text>`;
+      x += w;
+    });
+  });
+  svg += `<text x="${L}" y="${H - 6}">0%</text><text x="${W - Rr}" y="${H - 6}" text-anchor="end">100%</text></svg>`;
+  $('chProf').innerHTML = svg;
+  const lastY = s.ys.length - 1, rates = s.O.map((r, i) => r[lastY] / s.R[i]);
+  $('profNote').innerHTML = `Share of "${esc(s.ys[lastY])}" in each category of ${esc(xn)}: ${s.xs.map((x, i) => `${esc(x)} ${pct(rates[i])}`).join(', ')}; overall ${pct(s.C[lastY] / s.N)}. ` +
+    (s.chi < 1e-9 ? 'All the bars are identical to the overall bar: in these data Y has the same distribution in every category of X.' : 'Under independence every bar would match the bottom one; here they differ, and step 3 checks whether the difference is larger than chance.');
+
+  $('tExp').innerHTML = table(s.xs, s.ys, s.E.map(r => r.map(v => `<span class="${v < 5 ? 'bad' : ''}">${f2(v)}</span>`)), s.R, s.C, s.N, corner);
+  const kmax = Math.max(...s.K.flat());
+  $('tCon').innerHTML = table(s.xs, s.ys, s.K.map((r, i) => r.map((v, j) => `<span style="${v === kmax && v > 0 ? 'font-weight:800;color:#e11d48' : ''}">${f2(v)}${s.O[i][j] > s.E[i][j] ? ' ▲' : s.O[i][j] < s.E[i][j] ? ' ▼' : ''}</span>`)), s.K.map(r => f2(sum(r))), s.ys.map((_, j) => f2(sum(s.K.map(r => r[j])))), f2(s.chi), corner);
+
+  const crit = s.df > 0 ? critical(s.df, alpha) : NaN, reject = s.p < alpha;
+  $('chiKpi').innerHTML = [['χ²', s.chi.toFixed(3)], ['degrees of freedom', s.df], ['p-value', pfmt(s.p)], [`critical value (α = ${alpha})`, f2(crit)], ["Cramér's V", f2(s.V)], ['smallest expected count', f2(s.minE)], ['records N', s.N]]
+    .map(([l, v]) => `<div>${l}<b>${v}</b></div>`).join('');
+
+  if (s.df > 0) {
+    const xmax = Math.max(crit * 1.6, s.chi * 1.15, s.df + 4 * Math.sqrt(2 * s.df)), xsm = Array.from({ length: 301 }, (_, i) => xmax * (i + 0.5) / 301);
+    const ys = xsm.map(x => chiDensity(x, s.df)), ymax = Math.max(...ys.filter(Number.isFinite)) * 1.15;
+    const L2 = 52, R2 = 14, T2 = 12, B2 = 34, W2 = 760, H2 = 260;
+    const sx = v => L2 + v / xmax * (W2 - L2 - R2), sy = v => T2 + (1 - v / ymax) * (H2 - T2 - B2);
+    const tail = xsm.filter(x => x >= s.chi);
+    let g = '';
+    for (let k = 0; k <= 5; k++) { const v = xmax * k / 5; g += `<line x1="${sx(v)}" x2="${sx(v)}" y1="${T2}" y2="${H2 - B2}" stroke="#e2e8f0"/><text x="${sx(v)}" y="${H2 - B2 + 14}" text-anchor="middle">${+v.toPrecision(3)}</text>`; }
+    if (tail.length) g += `<path d="M${sx(s.chi)},${sy(0)} ${tail.map(x => `L${sx(x).toFixed(1)},${sy(chiDensity(x, s.df)).toFixed(1)}`).join(' ')} L${sx(xmax)},${sy(0)} Z" fill="rgba(225,29,72,0.3)"/>`;
+    g += `<path d="${xsm.map((x, i) => `${i ? 'L' : 'M'}${sx(x).toFixed(1)},${sy(Math.min(ys[i], ymax)).toFixed(1)}`).join('')}" fill="none" stroke="#7c3aed" stroke-width="2.2"/>`;
+    g += `<line x1="${sx(crit)}" x2="${sx(crit)}" y1="${T2}" y2="${H2 - B2}" stroke="#0f172a" stroke-dasharray="6 4"/><text x="${sx(crit) + 4}" y="${T2 + 24}" fill="#0f172a">critical ${f2(crit)}</text>`;
+    g += `<line x1="${sx(s.chi)}" x2="${sx(s.chi)}" y1="${T2}" y2="${H2 - B2}" stroke="#e11d48" stroke-width="2.5"/><text x="${Math.min(sx(s.chi) + 4, W2 - 150)}" y="${T2 + 10}" fill="#e11d48" font-weight="700">observed χ² = ${s.chi.toFixed(2)}</text>`;
+    $('chChi').innerHTML = `<svg viewBox="0 0 ${W2} ${H2}" font-family="Inter, sans-serif" font-size="11" fill="#475569">${g}<rect x="${L2}" y="${T2}" width="${W2 - L2 - R2}" height="${H2 - T2 - B2}" fill="none" stroke="#cbd5e1"/><text x="${(L2 + W2 - R2) / 2}" y="${H2 - 4}" text-anchor="middle" font-weight="700">value of the statistic</text></svg>`;
+  } else $('chChi').innerHTML = '<p class="muted">A variable has only one category: no test is possible.</p>';
+
+  const iMax = s.K.findIndex(r => r.includes(kmax)), jMax = s.K[iMax].indexOf(kmax);
+  const verdict = s.chi < 1e-9 ? 'The observed table is identical to the independence table: χ² = 0 and p = 1.' :
+    `χ² = ${s.chi.toFixed(2)} with ${s.df} degrees of freedom gives p = ${pfmt(s.p)}, ${reject ? 'below' : 'above'} α = ${alpha}: ${reject ? 'H₀ is rejected, the data show a statistically significant association' : 'H₀ is not rejected, the differences are compatible with chance'}. ` +
+    `The largest contribution comes from the cell (${esc(s.xs[iMax])}, ${esc(s.ys[jMax])}): ${s.O[iMax][jMax]} observed against ${f2(s.E[iMax][jMax])} expected.`;
+  $('chiNote').innerHTML = verdict + (s.minE < 5 ? ` <span class="bad">Warning: some expected counts are below 5, so the chi-square approximation is not reliable here.</span>` : ` All expected counts are at least 5, so the chi-square approximation is reliable.`);
+
+  $('sideChi').textContent = s.chi.toFixed(2); $('sideDf').textContent = s.df; $('sideP').textContent = s.p >= 0.001 ? s.p.toFixed(3) : s.p.toExponential(1);
+  $('sideVerdict').innerHTML = s.df > 0 ? (reject ? `<b class="bad">Dependent</b> at α = ${alpha}` : `<b class="good">No evidence against independence</b> at α = ${alpha}`) : '';
+
+  const interpDep = `In these data the distribution of ${esc(yn)} changes with ${esc(xn)}: ${s.xs.map((x, i) => `${pct(rates[i])} "${esc(s.ys[lastY])}" for ${esc(x)}`).join(', ')}. The gap from the independence table is too large to be explained by chance (p = ${pfmt(s.p)} &lt; ${alpha}): <b>${esc(xn)} and ${esc(yn)} are statistically dependent</b>. Cramér's V = ${f2(s.V)} indicates an association that is real but far from a deterministic link: knowing ${esc(xn)} shifts the probabilities of ${esc(yn)}, it does not fix them.`;
+  const interpInd = s.chi < 1e-9 ? `The row profiles are identical to the marginal distribution of ${esc(yn)}, so fᵢⱼ = fᵢ₊·f₊ⱼ in every cell: <b>in these data the two variables are exactly independent</b>. This table was built that way; a real sample would show at least small differences.` :
+    `The row profiles differ a little from the marginal of ${esc(yn)}, but p = ${pfmt(s.p)} ≥ ${alpha}: the differences are of the size that random sampling produces. <b>There is no evidence against independence</b>, which is not the same as proving it.`;
+  $('interp').innerHTML = s.df === 0 ? 'Only one category: independence cannot be tested.' : reject ? interpDep + (src === 'rnd' ? ' <b>But this sample was generated under independence</b>: the rejection is a type I error, which happens for about a fraction α of the seeds.' : '') : interpInd;
+  $('varTable').hidden = src === 'csv';
+
+  $('concl').innerHTML = `The contingency table summarises the joint distribution of two categorical variables; the margins describe each one alone, and the conditional frequencies show how one changes across the categories of the other. The expected table is the benchmark of independence, with the same margins, and χ² measures the distance from it. ` +
+    (src === 'dep' ? `For the login data χ² = ${s.chi.toFixed(2)} (df = ${s.df}, p = ${pfmt(s.p)}): the connection source and the alert level are statistically associated, mostly because of the Public Wi-Fi sessions, which have more high alerts and fewer low ones than expected. ` : '') +
+    `Statistical association is a fact about the data; a causal explanation needs more: knowledge of how the data were produced, control of confounders or an experiment.`;
+  nodeVal[0] = `${s.N} records`; nodeVal[1] = `${s.xs.length} × ${s.ys.length} table`; nodeVal[2] = `χ² = ${s.chi.toFixed(2)} · p = ${pfmt(s.p)}`; nodeVal[3] = s.df ? (reject ? 'dependent' : 'compatible with independence') : ''; drawSteps();
+}
+
+function load() {
+  src = $('dsIn').value;
+  const seed = Math.round(Number($('seedIn').value)) || 0;
+  const recs = src === 'dep' ? fromCounts(DEP, seed) : src === 'ind' ? fromCounts(IND, seed) : randomIndependent(seed);
+  $('csvIn').value = toCsv(['Source', 'Alert'], recs);
+  $('dsText').innerHTML = {
+    dep: 'A synthetic dataset of 270 login sessions to a company network, invented for this exercise (not real data). The counts were chosen so that sessions from public Wi-Fi receive high alerts more often.',
+    ind: 'A synthetic table of 270 sessions built to be exactly independent: in every connection source 50% of the sessions are Low, 30% Medium and 20% High.',
+    rnd: 'A random sample of 270 sessions generated under independence: the source and the alert level are drawn separately (alerts 50% / 30% / 20% everywhere). Any association is pure chance. Change the seed to draw a new sample.'
+  }[src];
+  $('csvMsg').textContent = '';
+  A = analyse(['Source', 'Alert'], recs);
+  render();
+}
+function fromTextarea() {
+  try { const { names, recs } = parseCsv($('csvIn').value); src = 'csv'; A = analyse(names, recs); $('csvMsg').innerHTML = `<span class="good">${recs.length} records analysed</span>`; $('dsText').innerHTML = 'Dataset entered by hand in the box below.'; render(); }
+  catch (e) { $('csvMsg').innerHTML = `<span class="bad">${esc(e.message)}</span>`; }
+}
+
+const STEPS = [
+  { tag: 'Step 1', name: 'Dataset', color: '#0284c7' },
+  { tag: 'Step 2', name: 'Contingency table', color: '#059669' },
+  { tag: 'Step 3', name: 'Expected & χ²', color: '#e11d48' },
+  { tag: 'Step 4', name: 'Interpretation', color: '#7c3aed' }
+];
+const nodeVal = ['', '', '', ''];
+let CUR = 0;
+function drawSteps() {
+  $('steps').innerHTML = STEPS.map((s, i) => `<button class="node ${i === CUR ? 'active' : ''}" data-i="${i}">
+    <div class="n-tag" style="color:${s.color}">${s.tag}</div><div class="n-name">${s.name}</div><div class="n-val">${nodeVal[i]}</div></button>`).join('');
+  $('steps').querySelectorAll('.node').forEach(b => b.onclick = () => setStage(+b.dataset.i));
+}
+function setStage(i) {
+  CUR = i;
+  document.querySelectorAll('.detail section').forEach((s, j) => s.classList.toggle('on', j === CUR));
+  $('detail').scrollTop = 0;
+  drawSteps();
+}
+
+$('dsIn').onchange = load;
+$('seedIn').onchange = load;
+$('seedRand').onclick = () => { $('seedIn').value = Math.floor(Math.random() * 1e6); if ($('dsIn').value !== 'rnd') $('dsIn').value = 'rnd'; load(); };
+$('alphaIn').onchange = () => A && render();
+$('btnCsv').onclick = fromTextarea;
+setStage(0);
+requestAnimationFrame(() => setTimeout(load, 30));
+</script>
+
+</body>
+</html>
