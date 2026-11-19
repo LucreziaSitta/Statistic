@@ -323,7 +323,8 @@
 
     @media (max-width: 1250px) { .steps { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
     @media (max-width: 900px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } .trio { grid-template-columns: 1fr; } }
-    .steps { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+    .steps { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
+    @media (max-width: 1250px) { .steps { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } }
     @media (max-width: 900px) { .steps { grid-template-columns: 1fr !important; } }
   </style>
 </head>
@@ -344,21 +345,32 @@
       <div class="slider-container">
         <span class="field-label">DATASET</span>
         <select id="dsIn" class="k-input-box">
-          <option value="dep">Login events (synthetic, 270 records)</option>
+          <option value="arth">Arthritis trial (real, 84 patients)</option>
+          <option value="login">Login sessions (synthetic, 270)</option>
           <option value="ind">Exactly independent table (270)</option>
           <option value="rnd">Random sample under independence</option>
+          <option value="csv" disabled>Your CSV (step 1)</option>
         </select>
-        <span class="field-label">SEED (random sample)</span>
-        <div class="num-row">
-          <input type="number" id="seedIn" class="k-input-box" min="0" value="2711" aria-label="Seed">
-          <button class="btn-action btn-subtle" id="seedRand" title="New random seed" aria-label="New random seed">⚄</button>
-        </div>
+        <span class="field-label">X (rows)</span>
+        <select id="xIn" class="k-input-box"></select>
+        <span class="field-label">Y (columns)</span>
+        <select id="yIn" class="k-input-box"></select>
+        <span class="field-label">RECORDS USED</span>
+        <select id="fIn" class="k-input-box"></select>
+      </div>
+
+      <div class="slider-container">
         <span class="field-label">SIGNIFICANCE LEVEL α</span>
         <select id="alphaIn" class="k-input-box">
           <option value="0.1">0.10</option>
           <option value="0.05" selected>0.05</option>
           <option value="0.01">0.01</option>
         </select>
+        <span class="field-label">SEED (random sample, step 4)</span>
+        <div class="num-row">
+          <input type="number" id="seedIn" class="k-input-box" min="0" value="2711" aria-label="Seed">
+          <button class="btn-action btn-subtle" id="seedRand" title="New random seed" aria-label="New random seed">⚄</button>
+        </div>
       </div>
 
       <div class="spaces" aria-label="Main results">
@@ -375,32 +387,25 @@
 
     <div class="detail" id="detail">
 
-      <!-- 1 · dataset -->
       <section id="d0">
         <div class="d-head"><div><div class="d-tag">Step 1</div><div class="d-title">The bivariate dataset (X, Y)</div></div></div>
         <p id="dsText"></p>
-        <table class="report-table" id="varTable">
-          <thead><tr><th>variable</th><th>meaning</th><th>categories</th></tr></thead>
-          <tbody>
-            <tr><td><b>X</b></td><td>Where the login came from</td><td>Office, Home VPN, Public Wi-Fi</td></tr>
-            <tr><td><b>Y</b></td><td>Alert level assigned by the monitoring system to the session</td><td>Low, Medium, High</td></tr>
-          </tbody>
-        </table>
-        <p>The statistical unit is one login session. The page starts from the <b>individual records</b>, one line per session, and builds every table by counting them. The records below can be edited, or replaced with any other dataset with two categorical columns: the first line gives the names of the two variables.</p>
+        <div class="note" id="dsSource"></div>
+        <div class="scroll"><table class="report-table" id="varTable"></table></div>
+        <p>Whatever the dataset, the page starts from the <b>individual records</b>, one line per statistical unit, and obtains every table by counting them. With more than two columns, the side panel chooses which two are crossed and whether to use all the records or only one group.</p>
         <div class="grid2">
-          <div><div class="chart-title">First 10 records (shuffled order)</div><div class="scroll"><table class="report-table" id="recTable"></table></div></div>
+          <div><div class="chart-title">First 12 records</div><div class="scroll"><table class="report-table" id="recTable"></table></div></div>
           <div>
-            <div class="chart-title">All records (CSV, editable)</div>
-            <textarea id="csvIn" class="param-input-box" rows="11" spellcheck="false" style="font-family:'JetBrains Mono',monospace;font-size:.72rem"></textarea>
+            <div class="chart-title">All records (CSV, editable: paste any dataset with a header line)</div>
+            <textarea id="csvIn" class="param-input-box" rows="12" spellcheck="false" style="font-family:'JetBrains Mono',monospace;font-size:.72rem"></textarea>
             <div class="row"><button class="btn-action btn-play btn-inline" id="btnCsv">▶ Analyse these records</button><span class="muted" id="csvMsg"></span></div>
           </div>
         </div>
       </section>
 
-      <!-- 2 · table -->
       <section id="d1">
         <div class="d-head"><div><div class="d-tag">Step 2</div><div class="d-title">Contingency table, marginal and conditional frequencies</div></div></div>
-        <p>For each record, 1 is added to the cell (i, j) of its pair of categories. With nᵢⱼ the count of cell (i, j), nᵢ₊ the row totals, n₊ⱼ the column totals and N the number of records:</p>
+        <p>Each record adds 1 to the cell of its pair of categories. With nᵢⱼ the count of cell (i, j), nᵢ₊ the row totals, n₊ⱼ the column totals and N the number of records:</p>
         <div class="trio">
           <div class="S"><span>Joint</span><strong>fᵢⱼ = nᵢⱼ / N</strong><small>share of all records in the cell</small></div>
           <div class="A"><span>Marginal</span><strong>fᵢ₊ = nᵢ₊/N, f₊ⱼ = n₊ⱼ/N</strong><small>each variable on its own</small></div>
@@ -411,68 +416,119 @@
           <div><div class="chart-title">Joint and marginal relative frequencies</div><div class="scroll" id="tJoint"></div></div>
         </div>
         <div class="grid2">
+          <div><div class="chart-title">Marginal distribution of X</div><div class="scroll" id="tMx"></div></div>
+          <div><div class="chart-title">Marginal distribution of Y</div><div class="scroll" id="tMy"></div></div>
+        </div>
+        <div class="grid2">
           <div><div class="chart-title">Y given X: f(Y | X), rows sum to 100%</div><div class="scroll" id="tRow"></div></div>
           <div><div class="chart-title">X given Y: f(X | Y), columns sum to 100%</div><div class="scroll" id="tCol"></div></div>
         </div>
+        <div class="chart-title">How far each group is from the overall distribution: f(yⱼ | xᵢ) − f₊ⱼ, in percentage points</div>
+        <div class="scroll" id="tGap"></div>
+        <p class="muted">Under independence every entry of this table would be 0: knowing X would not move the distribution of Y at all. The sign says in which direction the group differs from everyone.</p>
         <div class="chart-title">Distribution of Y in each category of X, and overall</div>
         <div class="legend" id="profLegend"></div>
         <div class="chart" id="chProf"></div>
         <div class="note" id="profNote"></div>
       </section>
 
-      <!-- 3 · expected and chi-square -->
       <section id="d2">
-        <div class="d-head"><div><div class="d-tag">Step 3</div><div class="d-title">Expected frequencies and the chi-square statistic</div></div></div>
-        <p>If X and Y were independent, every joint frequency would be the product of its marginals, fᵢⱼ = fᵢ₊·f₊ⱼ. Multiplying by N gives the counts expected under independence, with the same margins as the data:</p>
+        <div class="d-head"><div><div class="d-tag">Step 3</div><div class="d-title">Expected frequencies and the chi-square test</div></div></div>
+        <p>Independence says that the joint frequency of a cell is the product of the two marginal ones, fᵢⱼ = fᵢ₊·f₊ⱼ. Multiplying by N turns this into the counts that the table should contain if X and Y were independent, with exactly the same totals as the data:</p>
         <div class="msg"><b>Eᵢⱼ = N · fᵢ₊ · f₊ⱼ = nᵢ₊ · n₊ⱼ / N</b></div>
         <div class="grid2">
-          <div><div class="chart-title">Expected counts Eᵢⱼ</div><div class="scroll" id="tExp"></div></div>
-          <div><div class="chart-title">Contributions (nᵢⱼ − Eᵢⱼ)² / Eᵢⱼ &nbsp;<span class="muted">▲ observed above expected, ▼ below</span></div><div class="scroll" id="tCon"></div></div>
+          <div><div class="chart-title">Expected counts Eᵢⱼ <span class="muted">(red: below 5)</span></div><div class="scroll" id="tExp"></div></div>
+          <div><div class="chart-title">Contributions (nᵢⱼ − Eᵢⱼ)² / Eᵢⱼ &nbsp;<span class="muted">▲ more than expected, ▼ fewer</span></div><div class="scroll" id="tCon"></div></div>
         </div>
-        <p>Pearson's statistic adds up the squared gaps, each divided by the expected count:</p>
+        <div class="d-sub">Pearson's statistic</div>
         <div class="msg"><b>χ² = Σᵢ Σⱼ (nᵢⱼ − Eᵢⱼ)² / Eᵢⱼ</b>, &nbsp; df = (r − 1)(c − 1)</div>
-        <p>χ² = 0 exactly when the table equals the independence table, and grows with the distance from it. If X and Y are independent in the population and the expected counts are not too small (all ≥ 5 is the usual rule), χ² follows approximately a chi-square distribution with df degrees of freedom. The <b>p-value</b> is the probability, under independence, of a value at least as large as the observed one.</p>
+        <ul>
+          <li><b>Each cell is weighted by 1/Eᵢⱼ</b>: a gap of 5 records means a lot in a cell that expects 7, little in one that expects 200.</li>
+          <li><b>Degrees of freedom.</b> The expected table keeps the row and column totals of the data. Once those are fixed, only (r − 1)(c − 1) cells can be filled freely and the others are forced by the totals: in a 2 × 3 table, choosing 2 cells of the first row decides everything else. Here r = <span id="rTxt"></span>, c = <span id="cTxt"></span>, so df = <span id="dfTxt"></span>.</li>
+          <li><b>p-value.</b> If X and Y are independent and the expected counts are not too small (the usual rule: at least 5 in every cell, or at most 20% of the cells below 5 and none below 1), χ² follows approximately the chi-square distribution with df degrees of freedom. The p-value is the probability, under independence, of a χ² at least as large as the observed one: Q(df/2, χ²/2), the regularized upper incomplete gamma function, computed with its series and continued fraction.</li>
+          <li><b>Strength.</b> χ² measures how strong the <i>evidence</i> of dependence is, and it grows with N. To measure how strong the dependence itself is, I use Cramér's V = √(χ² / (N·(min(r, c) − 1))), from 0 (independent in the data) to 1.</li>
+        </ul>
         <div class="kpi" id="chiKpi"></div>
-        <div class="chart-title">Chi-square distribution with the observed statistic</div>
-        <div class="legend"><span><i style="background:#7c3aed"></i>density of χ² under independence</span><span><i class="box" style="background:rgba(225,29,72,.3)"></i>p-value (area to the right)</span><span><i class="dash" style="color:#0f172a"></i>critical value</span></div>
+        <div class="chart-title">Chi-square distribution under independence and the observed statistic</div>
+        <div class="legend"><span><i style="background:#7c3aed"></i>density of χ²_df</span><span><i class="box" style="background:rgba(225,29,72,.3)"></i>p-value (area to the right)</span><span><i class="dash" style="color:#0f172a"></i>critical value</span></div>
         <div class="chart" id="chChi"></div>
         <div class="note" id="chiNote"></div>
-        <p class="muted">The p-value uses the regularized upper incomplete gamma function, P(χ²_df ≥ x) = Q(df/2, x/2), computed with its series and continued-fraction expansions.</p>
       </section>
 
-      <!-- 4 · theory and conclusions -->
       <section id="d3">
-        <div class="d-head"><div><div class="d-tag">Step 4</div><div class="d-title">Independence: theory, interpretation, causality</div></div></div>
+        <div class="d-head"><div><div class="d-tag">Step 4</div><div class="d-title">How many records does the test need?</div></div></div>
+        <p>The same question can get different answers depending only on how much data we have. To see it, I treat two tables as whole populations and draw from each one many random samples of size n, applying the χ² test to every sample:</p>
+        <ul>
+          <li><b>a population with an association</b>: the proportions of the <span id="ssName"></span> table of step 2;</li>
+          <li><b>a population without association</b>: the same margins, but every row with the same profile (the expected table of step 3).</li>
+        </ul>
+        <p>The share of samples where H₀ is rejected is plotted against n. For the first population it is the probability of <b>detecting</b> a dependence that exists (power); for the second it is the probability of a <b>false alarm</b> (type I error), which should stay close to α.</p>
+        <div class="row">
+          <label>samples per n <select id="repIn" class="param-input-box" style="width:auto"><option>200</option><option selected>500</option><option>1000</option></select></label>
+          <button class="btn-action btn-step btn-inline" id="btnSs">▶ Run</button>
+        </div>
+        <div class="legend"><span><i style="background:#e11d48"></i>population with association</span><span><i style="background:#059669"></i>population without association</span><span><i class="dash" style="color:#0f172a"></i>α</span><span><i class="dash" style="color:#64748b"></i>80%</span></div>
+        <div class="chart" id="chSs"></div>
+        <div class="note" id="ssNote"></div>
+      </section>
+
+      <section id="d4">
+        <div class="d-head"><div><div class="d-tag">Step 5</div><div class="d-title">The arthritis trial, split by sex</div></div></div>
+        <p>In the clinical trial each patient has three variables: <b>Treatment</b>, <b>Sex</b> and <b>Improved</b>. Below, the test is applied to every pair, and Treatment × Improved is repeated separately for women and men.</p>
+        <div class="scroll"><table class="report-table">
+          <thead><tr><th>pair</th><th>patients</th><th class="m c">N</th><th class="m c">χ²</th><th class="m c">df</th><th class="m c">p-value</th><th class="m c">Cramér's V</th><th class="m c">cells E &lt; 5</th><th>result</th></tr></thead>
+          <tbody id="artBody"></tbody>
+        </table></div>
+        <div class="chart-title">Share of patients with a marked improvement</div>
+        <div class="legend"><span><i class="box" style="background:#94a3b8"></i>placebo</span><span><i class="box" style="background:#7c3aed"></i>treated</span></div>
+        <div class="chart" id="chArt"></div>
+        <div class="note" id="artNote"></div>
+        <div class="row"><button class="btn-action btn-subtle btn-inline" id="btnMen">Open "men only" in steps 2–3</button><button class="btn-action btn-subtle btn-inline" id="btnWomen">Open "women only" in steps 2–3</button></div>
+      </section>
+
+      <section id="d5">
+        <div class="d-head"><div><div class="d-tag">Step 6</div><div class="d-title">Independence: theory, interpretation, causality</div></div></div>
         <div class="grid2">
           <div class="card2">
             <h4>In probability</h4>
-            <p>Two events are independent when <span class="formula">P(A ∩ B) = P(A)·P(B)</span>, that is, when P(B) &gt; 0, <span class="formula">P(A | B) = P(A)</span>: knowing that B happened does not change the probability of A. Two discrete random variables are independent when P(X = x, Y = y) = P(X = x)·P(Y = y) for every pair of values. This is an exact property of a model, and it is symmetric in X and Y.</p>
+            <p>Two events A and B are independent when <span class="formula">P(A ∩ B) = P(A)·P(B)</span>, and, if P(B) &gt; 0, this is the same as <span class="formula">P(A | B) = P(A)</span>: being told that B happened does not change the probability of A.</p>
+            <p><b>An example with one die.</b> A = "even", B = "at most 4": P(A ∩ B) = P({2, 4}) = 2/6 and P(A)·P(B) = ½ · 4/6 = 2/6, so they are independent, even though they concern the same throw. With C = "at most 3" instead: P(A ∩ C) = P({2}) = 1/6, but P(A)·P(C) = 1/4, so A and C are dependent. Independence is a property of the probabilities, not of whether the events "look related".</p>
+            <p>Two random variables are independent when P(X = xᵢ, Y = yⱼ) = P(X = xᵢ)·P(Y = yⱼ) for every pair of values, so every conditional distribution of Y equals its marginal distribution.</p>
           </div>
           <div class="card2">
             <h4>In statistics</h4>
-            <p>On data the same definition reads fᵢⱼ = fᵢ₊·f₊ⱼ, or equivalently: all the row profiles f(Y | X) are equal to the marginal of Y. In a sample this almost never holds exactly, because of random variation. So the question becomes a test: <b>H₀</b> X and Y are independent in the population, <b>H₁</b> they are not. χ² measures whether the gap from the independence table is larger than chance would produce.</p>
+            <p>On a dataset the same idea reads fᵢⱼ = fᵢ₊·f₊ⱼ in every cell, which means nᵢⱼ = Eᵢⱼ, χ² = 0 and all the gaps of step 2 equal to 0. Real data almost never satisfy this exactly: counts are integers and every sample is a little different.</p>
+            <p>So the statistical question is about the population the records come from: <b>H₀</b>: X and Y are independent, <b>H₁</b>: they are not. The test asks whether the distance between the data and the independence table is larger than sampling alone would produce. A small p-value is evidence of dependence; a large p-value is only absence of evidence, as step 4 shows with small samples.</p>
+            <p>The test also assumes that the <b>records</b> are independent of one another (each patient or session counted once): a different requirement from the independence of X and Y that is being tested.</p>
           </div>
         </div>
 
-        <div class="d-sub">Interpretation of the current dataset</div>
+        <div class="d-sub">Interpretation of the current table</div>
         <div class="note" id="interp"></div>
-        <ul>
-          <li>A small p-value says the association is unlikely to be due to chance; it does <b>not</b> say how strong it is. Cramér's V = √(χ² / (N·(min(r, c) − 1))), between 0 and 1, measures the strength, while χ² also grows with N.</li>
-          <li>A large p-value does not prove independence: it only means that the data are compatible with it. With the random sample under independence, about α of the seeds (5% with α = 0.05) still reject H₀: try several seeds.</li>
-          <li>The p-value is not the probability that H₀ is true.</li>
-        </ul>
 
-        <div class="d-sub">Association is not causality</div>
-        <p>The chi-square test detects <b>statistical association</b>: the distribution of Y changes with X. It is symmetric in X and Y, so it cannot even say which one would be the cause, and it cannot say why they are associated. In the login example, more high alerts from public Wi-Fi does not prove that the network <i>causes</i> the alerts:</p>
-        <ul>
-          <li><b>Confounding:</b> sessions from public Wi-Fi may come mostly from staff who travel and use personal or older devices; the device, not the network, could produce the alerts.</li>
-          <li><b>Measurement:</b> the monitoring system may itself give a higher base score to unknown networks, so part of the association is built into how Y is recorded.</li>
-          <li><b>Selection:</b> only sessions that reached the gateway are in the data; blocked attempts are missing.</li>
-        </ul>
-        <p>A causal conclusion would need a design that removes these alternatives, for example comparing the same devices and users across networks, or a controlled experiment. What the test establishes is narrower but still useful: whether the association is larger than sampling noise, and in which cells it is located (the largest contributions in step 3).</p>
+        <div class="d-sub">Statistical association and causality</div>
+        <p>The χ² test says whether two variables are associated. It is symmetric in X and Y and uses only counts, so on its own it says nothing about <i>why</i>. My two datasets show the difference between the situations in which a causal reading is possible and those in which it is not.</p>
+        <div class="grid2">
+          <div class="card2">
+            <h4>Login sessions: observational data</h4>
+            <p>Nobody decided where each session came from. Users who connect from public Wi-Fi may differ in many ways from those in the office: they travel, use personal laptops, work at odd hours. Any of these could explain more high alerts, and so could the monitoring rules themselves, if they score unknown networks higher. The association is real in the data, but the table cannot tell which of these explanations is the right one.</p>
+          </div>
+          <div class="card2">
+            <h4>Arthritis trial: a randomised experiment</h4>
+            <p>Here the treatment was assigned at random and double blind. Randomisation makes the treatment independent of everything about the patient, measured or not, and the data confirm it for sex (step 5, p = <span id="sexTreatP"></span>). The only systematic difference between the two groups is then the drug, so the association between Treatment and Improved can be read as an <b>effect</b> of the treatment: the reason clinical trials are randomised.</p>
+          </div>
+        </div>
+        <p>In between, with observational data, a causal claim needs a model of the possible confounders and data to adjust for them, for example by comparing groups that are alike in those variables (as done for sex in step 5). And the absence of association does not exclude an effect: in a small sample it can simply be missed.</p>
 
         <div class="d-sub">Conclusions</div>
         <p id="concl"></p>
+
+        <div class="d-sub">Sources</div>
+        <ul>
+          <li>G. Koch and S. Edwards (1988), "Clinical efficiency trials with categorical data", in K. E. Peace (ed.), <i>Biopharmaceutical Statistics for Drug Development</i>, Marcel Dekker, pp. 403–451: the arthritis trial.</li>
+          <li>M. Friendly (2000), <i>Visualizing Categorical Data</i>, SAS Institute; data distributed as <a href="https://search.r-project.org/CRAN/refmans/vcd/html/Arthritis.html" target="_blank" rel="noopener">Arthritis in the R package vcd</a>. Counts checked against the tables printed in <a href="https://rstudio-pubs-static.s3.amazonaws.com/308590_90460d43093a4a8082d91f206bce6d62.html" target="_blank" rel="noopener">this RPubs analysis</a>.</li>
+          <li>The login-session data are invented for this homework.</li>
+        </ul>
       </section>
     </div>
   </div>
@@ -490,26 +546,45 @@ const pfmt = p => !Number.isFinite(p) ? '–' : p >= 0.001 ? p.toFixed(4) : p.to
 function mulberry32(a) {
   return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
+function shuffle(arr, r) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); const t = arr[i]; arr[i] = arr[j]; arr[j] = t; } return arr; }
 
-const XS = ['Office', 'Home VPN', 'Public Wi-Fi'], YS = ['Low', 'Medium', 'High'];
-const DEP = [[80, 28, 12], [47, 28, 15], [21, 20, 19]];
-const IND = [[60, 36, 24], [45, 27, 18], [30, 18, 12]];
-
-function fromCounts(counts, seed) {
+const ORDER = { Source: ['Office', 'Home VPN', 'Public Wi-Fi'], Alert: ['Low', 'Medium', 'High'], Treatment: ['Placebo', 'Treated'], Sex: ['Female', 'Male'], Improved: ['None', 'Some', 'Marked'] };
+const XS = ORDER.Source, YS = ORDER.Alert;
+const LOGIN = [[80, 28, 12], [47, 28, 15], [21, 20, 19]];
+const INDEP = [[60, 36, 24], [45, 27, 18], [30, 18, 12]];
+const ARTH = [['Placebo', 'Female', 'None', 19], ['Placebo', 'Female', 'Some', 7], ['Placebo', 'Female', 'Marked', 6],
+  ['Placebo', 'Male', 'None', 10], ['Placebo', 'Male', 'Some', 0], ['Placebo', 'Male', 'Marked', 1],
+  ['Treated', 'Female', 'None', 6], ['Treated', 'Female', 'Some', 5], ['Treated', 'Female', 'Marked', 16],
+  ['Treated', 'Male', 'None', 7], ['Treated', 'Male', 'Some', 2], ['Treated', 'Male', 'Marked', 5]];
+const TEXT = {
+  arth: 'Real data from a double-blind clinical trial of a new treatment for rheumatoid arthritis: 84 patients, each with the treatment received (Placebo or Treated), sex and the improvement observed at the end (None, Some, Marked). The default question: is the improvement independent of the treatment?',
+  login: 'A synthetic dataset I built for this homework: 270 login sessions to a company network, with the connection source (Office, Home VPN, Public Wi-Fi) and the alert level given by the monitoring system (Low, Medium, High). The counts are invented so that public Wi-Fi sessions get high alerts more often.',
+  ind: 'A synthetic table of 270 sessions built to be exactly independent: in every connection source 50% of the sessions are Low, 30% Medium and 20% High.',
+  rnd: 'A random sample of 270 sessions generated under independence: source and alert level are drawn separately, alerts 50% / 30% / 20% everywhere. Any association is pure chance; change the seed to draw another sample.',
+  csv: 'A dataset entered in the box below.'
+};
+const SOURCE = {
+  arth: '<b>Source.</b> Koch and Edwards (1988), reported in Friendly (2000), <i>Visualizing Categorical Data</i>, and distributed as the dataset <i>Arthritis</i> in the R package vcd. The counts were checked against two independent web sources (links at the end of step 6). Here each record keeps Treatment, Sex and Improved; the patient ID and age are not used.',
+  login: '<b>Source.</b> Invented data, for illustration only.', ind: '<b>Source.</b> Invented data, for illustration only.', rnd: '<b>Source.</b> Simulated in the browser with the chosen seed.', csv: '<b>Source.</b> Data entered by hand.'
+};
+function fromCounts(cells, seed) {
   const recs = [];
-  counts.forEach((row, i) => row.forEach((c, j) => { for (let k = 0; k < c; k++) recs.push([XS[i], YS[j]]); }));
-  const r = mulberry32(seed);
-  for (let i = recs.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [recs[i], recs[j]] = [recs[j], recs[i]]; }
-  return recs;
+  for (const c of cells) for (let k = 0; k < c[c.length - 1]; k++) recs.push(c.slice(0, -1));
+  return seed === null ? recs : shuffle(recs, mulberry32(seed));
 }
+const tableCells = M => M.flatMap((row, i) => row.map((c, j) => [XS[i], YS[j], c]));
 function randomIndependent(seed) {
   const r = mulberry32(seed), px = [120 / 270, 90 / 270, 60 / 270], py = [0.5, 0.3, 0.2], recs = [];
   const pick = p => { const u = r(); return u < p[0] ? 0 : u < p[0] + p[1] ? 1 : 2; };
   for (let k = 0; k < 270; k++) recs.push([XS[pick(px)], YS[pick(py)]]);
   return recs;
 }
+function makeDataset(id, seed) {
+  if (id === 'arth') return { id, names: ['Treatment', 'Sex', 'Improved'], recs: fromCounts(ARTH, 84), x: 0, y: 2 };
+  const recs = id === 'login' ? fromCounts(tableCells(LOGIN), 270) : id === 'ind' ? fromCounts(tableCells(INDEP), 270) : randomIndependent(seed);
+  return { id, names: ['Source', 'Alert'], recs, x: 0, y: 1 };
+}
 
-/* p-value: P(chi2_df >= x) = Q(df/2, x/2) */
 const LZ = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
 function lgamma(z) {
   if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lgamma(1 - z);
@@ -538,62 +613,94 @@ function gammaQ(a, x) {
 }
 const pValue = (chi, df) => df > 0 ? gammaQ(df / 2, chi / 2) : NaN;
 function critical(df, alpha) {
-  let lo = 0, hi = 1000;
+  let lo = 0, hi = 2000;
   for (let i = 0; i < 200; i++) { const mid = (lo + hi) / 2; if (pValue(mid, df) > alpha) lo = mid; else hi = mid; }
   return (lo + hi) / 2;
 }
-const chiDensity = (x, df) => x <= 0 ? (df === 2 ? 0.5 : df < 2 ? NaN : 0) : Math.exp((df / 2 - 1) * Math.log(x) - x / 2 - (df / 2) * Math.log(2) - lgamma(df / 2));
+const chiDensity = (x, df) => x <= 0 ? NaN : Math.exp((df / 2 - 1) * Math.log(x) - x / 2 - (df / 2) * Math.log(2) - lgamma(df / 2));
 
-/* parsing and analysis */
-function toCsv(names, recs) { return names.join(',') + '\n' + recs.map(r => r.join(',')).join('\n'); }
-function parseCsv(text) {
-  const lines = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-  if (lines.length < 3) throw Error('write a header line and at least two records');
-  const names = lines[0].split(',').map(s => s.trim());
-  if (names.length !== 2) throw Error('the header must have exactly two columns');
-  const recs = lines.slice(1).map((l, k) => {
-    const v = l.split(',').map(s => s.trim());
-    if (v.length !== 2 || !v[0] || !v[1]) throw Error('line ' + (k + 2) + ' must have two non-empty values');
-    return v;
-  });
-  return { names, recs };
+function order(values, name) {
+  const seen = [...new Set(values)], pref = ORDER[name];
+  return pref && seen.every(v => pref.includes(v)) ? pref.filter(v => seen.includes(v)) : seen;
 }
-function order(values, preferred) {
-  const seen = [...new Set(values)];
-  return preferred && seen.every(v => preferred.includes(v)) ? preferred.filter(v => seen.includes(v)) : seen;
-}
-function analyse(names, recs) {
-  const xs = order(recs.map(r => r[0]), XS), ys = order(recs.map(r => r[1]), YS);
+function analysePairs(pairs, xn, yn) {
+  const xs = order(pairs.map(p => p[0]), xn), ys = order(pairs.map(p => p[1]), yn);
   const O = xs.map(() => ys.map(() => 0));
-  for (const [x, y] of recs) O[xs.indexOf(x)][ys.indexOf(y)]++;
-  const N = recs.length, R = O.map(r => sum(r)), C = ys.map((_, j) => sum(O.map(r => r[j])));
+  for (const [x, y] of pairs) O[xs.indexOf(x)][ys.indexOf(y)]++;
+  const N = pairs.length, R = O.map(r => sum(r)), C = ys.map((_, j) => sum(O.map(r => r[j])));
   const E = O.map((r, i) => r.map((_, j) => R[i] * C[j] / N));
-  const K = O.map((r, i) => r.map((o, j) => (o - E[i][j]) ** 2 / E[i][j]));
-  const chi = sum(K.flat()), df = (xs.length - 1) * (ys.length - 1);
-  const k = Math.min(xs.length, ys.length) - 1;
-  return { names, recs, xs, ys, O, N, R, C, E, K, chi, df, p: pValue(chi, df), V: k > 0 ? Math.sqrt(chi / (N * k)) : NaN, minE: Math.min(...E.flat()) };
+  const K = O.map((r, i) => r.map((o, j) => E[i][j] > 0 ? (o - E[i][j]) ** 2 / E[i][j] : 0));
+  const chi = sum(K.flat()), df = (xs.length - 1) * (ys.length - 1), k = Math.min(xs.length, ys.length) - 1;
+  const small = E.flat().filter(e => e < 5).length, minE = Math.min(...E.flat());
+  return { pairs, xn, yn, xs, ys, O, N, R, C, E, K, chi, df, p: pValue(chi, df), V: k > 0 ? Math.sqrt(chi / (N * k)) : NaN,
+    minE, small, rule: minE >= 1 && small <= 0.2 * E.flat().length };
 }
 
-/* rendering */
+let DS = null, A = null, LOGIN_A = null, ART = null;
+function currentPairs() {
+  const f = $('fIn').value;
+  let recs = DS.recs;
+  if (f) { const [k, v] = JSON.parse(f); recs = recs.filter(r => r[k] === v); }
+  return recs.map(r => [r[DS.x], r[DS.y]]);
+}
+function fillSelectors() {
+  const opt = (v, t, sel) => `<option value="${v}"${sel ? ' selected' : ''}>${esc(t)}</option>`;
+  $('xIn').innerHTML = DS.names.map((n, i) => opt(i, n, i === DS.x)).join('');
+  $('yIn').innerHTML = DS.names.map((n, i) => opt(i, n, i === DS.y)).join('');
+  fillFilter();
+}
+function fillFilter() {
+  const others = DS.names.map((n, k) => k).filter(k => k !== DS.x && k !== DS.y);
+  let h = '<option value="">all records</option>';
+  for (const k of others) for (const v of order(DS.recs.map(r => r[k]), DS.names[k])) h += `<option value='${esc(JSON.stringify([k, v]))}'>only ${esc(DS.names[k])} = ${esc(v)}</option>`;
+  $('fIn').innerHTML = h;
+  $('fIn').disabled = !others.length;
+}
+
 function table(rowsHead, colsHead, cells, rowTot, colTot, grand, corner) {
   const th = `<thead><tr><th>${corner}</th>${colsHead.map(c => `<th class="m c">${esc(c)}</th>`).join('')}${rowTot ? '<th class="m c">total</th>' : ''}</tr></thead>`;
   const body = cells.map((r, i) => `<tr><td><b>${esc(rowsHead[i])}</b></td>${r.map(v => `<td class="m c">${v}</td>`).join('')}${rowTot ? `<td class="m c"><b>${rowTot[i]}</b></td>` : ''}</tr>`).join('');
   const foot = colTot ? `<tr><td><b>total</b></td>${colTot.map(v => `<td class="m c"><b>${v}</b></td>`).join('')}${rowTot ? `<td class="m c"><b>${grand}</b></td>` : ''}</tr>` : '';
   return `<table class="report-table">${th}<tbody>${body}${foot}</tbody></table>`;
 }
-const COLS = ['#059669', '#d97706', '#e11d48', '#0284c7', '#7c3aed', '#64748b'];
-let A = null, src = 'dep';
+const COLS = ['#059669', '#d97706', '#e11d48', '#0284c7', '#7c3aed', '#64748b', '#0f766e', '#a16207'];
+
+function chiChart(df, chi, crit) {
+  const W = 760, H = 260, L = 52, R = 14, T = 12, B = 34;
+  const xmax = Math.max(crit * 1.6, df + 4 * Math.sqrt(2 * df), Math.min(chi * 1.1, 80));
+  const xs = Array.from({ length: 301 }, (_, i) => xmax * (i + 0.5) / 301), ys = xs.map(x => chiDensity(x, df));
+  const ymax = Math.max(...ys.filter(Number.isFinite).slice(df === 1 ? 6 : 0)) * 1.15;
+  const sx = v => L + v / xmax * (W - L - R), sy = v => T + (1 - Math.min(v, ymax) / ymax) * (H - T - B);
+  let g = '';
+  for (let k = 0; k <= 5; k++) { const v = xmax * k / 5; g += `<line x1="${sx(v)}" x2="${sx(v)}" y1="${T}" y2="${H - B}" stroke="#e2e8f0"/><text x="${sx(v)}" y="${H - B + 14}" text-anchor="middle">${+v.toPrecision(3)}</text>`; }
+  const tail = xs.filter(x => x >= chi);
+  if (tail.length) g += `<path d="M${sx(chi)},${sy(0)} ${tail.map(x => `L${sx(x).toFixed(1)},${sy(chiDensity(x, df)).toFixed(1)}`).join(' ')} L${sx(xmax)},${sy(0)} Z" fill="rgba(225,29,72,0.3)"/>`;
+  g += `<path d="${xs.map((x, i) => `${i ? 'L' : 'M'}${sx(x).toFixed(1)},${sy(ys[i]).toFixed(1)}`).join('')}" fill="none" stroke="#7c3aed" stroke-width="2.2"/>`;
+  g += `<line x1="${sx(crit)}" x2="${sx(crit)}" y1="${T}" y2="${H - B}" stroke="#0f172a" stroke-dasharray="6 4"/><text x="${sx(crit) + 4}" y="${T + 26}" fill="#0f172a">critical ${f2(crit)}</text>`;
+  g += chi <= xmax ? `<line x1="${sx(chi)}" x2="${sx(chi)}" y1="${T}" y2="${H - B}" stroke="#e11d48" stroke-width="2.5"/><text x="${Math.min(sx(chi) + 4, W - 170)}" y="${T + 11}" fill="#e11d48" font-weight="700">observed χ² = ${chi.toFixed(2)}</text>`
+    : `<text x="${W - R - 6}" y="${T + 11}" text-anchor="end" fill="#e11d48" font-weight="700">observed χ² = ${chi.toFixed(1)}, beyond the axis</text>`;
+  $('chChi').innerHTML = `<svg viewBox="0 0 ${W} ${H}" font-family="Inter, sans-serif" font-size="11" fill="#475569"><clipPath id="clipChi"><rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}"/></clipPath><g clip-path="url(#clipChi)">${g}</g><rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="none" stroke="#cbd5e1"/><text x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle" font-weight="700">value of the χ² statistic (df = ${df})</text></svg>`;
+}
 
 function render() {
-  const s = A, alpha = Number($('alphaIn').value), xn = s.names[0], yn = s.names[1];
-  $('recTable').innerHTML = `<thead><tr><th class="m c">#</th><th>${esc(xn)}</th><th>${esc(yn)}</th></tr></thead><tbody>` +
-    s.recs.slice(0, 10).map((r, i) => `<tr><td class="m c">${i + 1}</td><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('') + '</tbody>';
+  const s = A, alpha = Number($('alphaIn').value), xn = s.xn, yn = s.yn, corner = `${esc(xn)} \\ ${esc(yn)}`;
+  $('dsText').innerHTML = TEXT[DS.id]; $('dsSource').innerHTML = SOURCE[DS.id];
+  $('varTable').innerHTML = '<thead><tr><th>column</th><th>categories (count)</th></tr></thead><tbody>' +
+    DS.names.map((n, k) => { const vals = order(DS.recs.map(r => r[k]), n); return `<tr><td><b>${esc(n)}</b>${k === DS.x ? ' <span class="chip a">X</span>' : k === DS.y ? ' <span class="chip z">Y</span>' : ''}</td><td>${vals.map(v => `${esc(v)} (${DS.recs.filter(r => r[k] === v).length})`).join(', ')}</td></tr>`; }).join('') + '</tbody>';
+  $('recTable').innerHTML = `<thead><tr><th class="m c">#</th>${DS.names.map(n => `<th>${esc(n)}</th>`).join('')}</tr></thead><tbody>` +
+    DS.recs.slice(0, 12).map((r, i) => `<tr><td class="m c">${i + 1}</td>${r.map(v => `<td>${esc(v)}</td>`).join('')}</tr>`).join('') + '</tbody>';
 
-  const corner = `${esc(xn)} \\ ${esc(yn)}`;
   $('tObs').innerHTML = table(s.xs, s.ys, s.O, s.R, s.C, s.N, corner);
-  $('tJoint').innerHTML = table(s.xs, s.ys, s.O.map(r => r.map(v => pct(v / s.N))), s.R.map(v => pct(v / s.N)), s.C.map(v => pct(v / s.N)), '100%', corner);
+  $('tJoint').innerHTML = table(s.xs, s.ys, s.O.map(r => r.map(v => (v / s.N).toFixed(3))), s.R.map(v => (v / s.N).toFixed(3)), s.C.map(v => (v / s.N).toFixed(3)), '1.000', corner);
+  const marg = (cats, tot) => `<table class="report-table"><thead><tr><th>category</th><th class="m c">count</th><th class="m c">relative frequency</th></tr></thead><tbody>${cats.map((c, i) => `<tr><td><b>${esc(c)}</b></td><td class="m c">${tot[i]}</td><td class="m c">${(tot[i] / s.N).toFixed(3)} (${pct(tot[i] / s.N)})</td></tr>`).join('')}<tr><td><b>total</b></td><td class="m c"><b>${s.N}</b></td><td class="m c"><b>1.000</b></td></tr></tbody></table>`;
+  $('tMx').innerHTML = marg(s.xs, s.R); $('tMy').innerHTML = marg(s.ys, s.C);
   $('tRow').innerHTML = table(s.xs.concat(['all (marginal)']), s.ys, s.O.map((r, i) => r.map(v => pct(v / s.R[i]))).concat([s.C.map(v => pct(v / s.N))]), null, null, null, corner);
   $('tCol').innerHTML = table(s.xs, s.ys.concat(['all (marginal)']), s.O.map((r, i) => r.map((v, j) => pct(v / s.C[j])).concat([pct(s.R[i] / s.N)])), null, null, null, corner);
+  $('tGap').innerHTML = table(s.xs, s.ys, s.O.map((r, i) => r.map((v, j) => {
+    const g = 100 * (v / s.R[i] - s.C[j] / s.N), a = Math.min(1, Math.abs(g) / 30);
+    const bg = g > 0 ? `rgba(2,132,199,${0.08 + 0.4 * a})` : `rgba(225,29,72,${0.08 + 0.4 * a})`;
+    return Math.abs(g) < 0.05 ? '0.0' : `<span style="background:${bg};padding:2px 6px;border-radius:5px">${g > 0 ? '+' : '−'}${Math.abs(g).toFixed(1)}</span>`;
+  })), null, null, null, corner);
 
   const groups = s.xs.map((x, i) => [x, s.O[i].map(v => v / s.R[i])]).concat([['all', s.C.map(v => v / s.N)]]);
   $('profLegend').innerHTML = s.ys.map((y, j) => `<span><i class="box" style="background:${COLS[j % COLS.length]}"></i>${esc(y)}</span>`).join('');
@@ -609,86 +716,164 @@ function render() {
       x += w;
     });
   });
-  svg += `<text x="${L}" y="${H - 6}">0%</text><text x="${W - Rr}" y="${H - 6}" text-anchor="end">100%</text></svg>`;
-  $('chProf').innerHTML = svg;
+  $('chProf').innerHTML = svg + `<text x="${L}" y="${H - 6}">0%</text><text x="${W - Rr}" y="${H - 6}" text-anchor="end">100%</text></svg>`;
   const lastY = s.ys.length - 1, rates = s.O.map((r, i) => r[lastY] / s.R[i]);
   $('profNote').innerHTML = `Share of "${esc(s.ys[lastY])}" in each category of ${esc(xn)}: ${s.xs.map((x, i) => `${esc(x)} ${pct(rates[i])}`).join(', ')}; overall ${pct(s.C[lastY] / s.N)}. ` +
-    (s.chi < 1e-9 ? 'All the bars are identical to the overall bar: in these data Y has the same distribution in every category of X.' : 'Under independence every bar would match the bottom one; here they differ, and step 3 checks whether the difference is larger than chance.');
+    (s.chi < 1e-9 ? 'Every bar is identical to the overall one: in these data Y has the same distribution in every category of X.' : 'Under independence every bar would look like the bottom one; step 3 checks whether the differences are larger than chance.');
 
   $('tExp').innerHTML = table(s.xs, s.ys, s.E.map(r => r.map(v => `<span class="${v < 5 ? 'bad' : ''}">${f2(v)}</span>`)), s.R, s.C, s.N, corner);
   const kmax = Math.max(...s.K.flat());
   $('tCon').innerHTML = table(s.xs, s.ys, s.K.map((r, i) => r.map((v, j) => `<span style="${v === kmax && v > 0 ? 'font-weight:800;color:#e11d48' : ''}">${f2(v)}${s.O[i][j] > s.E[i][j] ? ' ▲' : s.O[i][j] < s.E[i][j] ? ' ▼' : ''}</span>`)), s.K.map(r => f2(sum(r))), s.ys.map((_, j) => f2(sum(s.K.map(r => r[j])))), f2(s.chi), corner);
+  $('rTxt').textContent = s.xs.length; $('cTxt').textContent = s.ys.length; $('dfTxt').textContent = s.df;
 
   const crit = s.df > 0 ? critical(s.df, alpha) : NaN, reject = s.p < alpha;
-  $('chiKpi').innerHTML = [['χ²', s.chi.toFixed(3)], ['degrees of freedom', s.df], ['p-value', pfmt(s.p)], [`critical value (α = ${alpha})`, f2(crit)], ["Cramér's V", f2(s.V)], ['smallest expected count', f2(s.minE)], ['records N', s.N]]
-    .map(([l, v]) => `<div>${l}<b>${v}</b></div>`).join('');
-
-  if (s.df > 0) {
-    const xmax = Math.max(crit * 1.6, s.chi * 1.15, s.df + 4 * Math.sqrt(2 * s.df)), xsm = Array.from({ length: 301 }, (_, i) => xmax * (i + 0.5) / 301);
-    const ys = xsm.map(x => chiDensity(x, s.df)), ymax = Math.max(...ys.filter(Number.isFinite)) * 1.15;
-    const L2 = 52, R2 = 14, T2 = 12, B2 = 34, W2 = 760, H2 = 260;
-    const sx = v => L2 + v / xmax * (W2 - L2 - R2), sy = v => T2 + (1 - v / ymax) * (H2 - T2 - B2);
-    const tail = xsm.filter(x => x >= s.chi);
-    let g = '';
-    for (let k = 0; k <= 5; k++) { const v = xmax * k / 5; g += `<line x1="${sx(v)}" x2="${sx(v)}" y1="${T2}" y2="${H2 - B2}" stroke="#e2e8f0"/><text x="${sx(v)}" y="${H2 - B2 + 14}" text-anchor="middle">${+v.toPrecision(3)}</text>`; }
-    if (tail.length) g += `<path d="M${sx(s.chi)},${sy(0)} ${tail.map(x => `L${sx(x).toFixed(1)},${sy(chiDensity(x, s.df)).toFixed(1)}`).join(' ')} L${sx(xmax)},${sy(0)} Z" fill="rgba(225,29,72,0.3)"/>`;
-    g += `<path d="${xsm.map((x, i) => `${i ? 'L' : 'M'}${sx(x).toFixed(1)},${sy(Math.min(ys[i], ymax)).toFixed(1)}`).join('')}" fill="none" stroke="#7c3aed" stroke-width="2.2"/>`;
-    g += `<line x1="${sx(crit)}" x2="${sx(crit)}" y1="${T2}" y2="${H2 - B2}" stroke="#0f172a" stroke-dasharray="6 4"/><text x="${sx(crit) + 4}" y="${T2 + 24}" fill="#0f172a">critical ${f2(crit)}</text>`;
-    g += `<line x1="${sx(s.chi)}" x2="${sx(s.chi)}" y1="${T2}" y2="${H2 - B2}" stroke="#e11d48" stroke-width="2.5"/><text x="${Math.min(sx(s.chi) + 4, W2 - 150)}" y="${T2 + 10}" fill="#e11d48" font-weight="700">observed χ² = ${s.chi.toFixed(2)}</text>`;
-    $('chChi').innerHTML = `<svg viewBox="0 0 ${W2} ${H2}" font-family="Inter, sans-serif" font-size="11" fill="#475569">${g}<rect x="${L2}" y="${T2}" width="${W2 - L2 - R2}" height="${H2 - T2 - B2}" fill="none" stroke="#cbd5e1"/><text x="${(L2 + W2 - R2) / 2}" y="${H2 - 4}" text-anchor="middle" font-weight="700">value of the statistic</text></svg>`;
-  } else $('chChi').innerHTML = '<p class="muted">A variable has only one category: no test is possible.</p>';
-
+  $('chiKpi').innerHTML = [['χ²', s.chi.toFixed(3)], ['degrees of freedom', s.df], ['p-value', pfmt(s.p)], [`critical value (α = ${alpha})`, f2(crit)], ["Cramér's V", f2(s.V)],
+    ['smallest expected count', f2(s.minE)], ['cells with E < 5', `${s.small} of ${s.xs.length * s.ys.length}`], ['records N', s.N]].map(([l, v]) => `<div>${l}<b>${v}</b></div>`).join('');
+  if (s.df > 0) chiChart(s.df, s.chi, crit); else $('chChi').innerHTML = '<p class="muted">A variable has only one category: no test is possible.</p>';
   const iMax = s.K.findIndex(r => r.includes(kmax)), jMax = s.K[iMax].indexOf(kmax);
-  const verdict = s.chi < 1e-9 ? 'The observed table is identical to the independence table: χ² = 0 and p = 1.' :
-    `χ² = ${s.chi.toFixed(2)} with ${s.df} degrees of freedom gives p = ${pfmt(s.p)}, ${reject ? 'below' : 'above'} α = ${alpha}: ${reject ? 'H₀ is rejected, the data show a statistically significant association' : 'H₀ is not rejected, the differences are compatible with chance'}. ` +
-    `The largest contribution comes from the cell (${esc(s.xs[iMax])}, ${esc(s.ys[jMax])}): ${s.O[iMax][jMax]} observed against ${f2(s.E[iMax][jMax])} expected.`;
-  $('chiNote').innerHTML = verdict + (s.minE < 5 ? ` <span class="bad">Warning: some expected counts are below 5, so the chi-square approximation is not reliable here.</span>` : ` All expected counts are at least 5, so the chi-square approximation is reliable.`);
+  $('chiNote').innerHTML = (s.chi < 1e-9 ? 'The observed table is identical to the independence table: χ² = 0 and p = 1.' :
+    `χ² = ${s.chi.toFixed(2)} with ${s.df} degrees of freedom gives p = ${pfmt(s.p)}, ${reject ? 'below' : 'above'} α = ${alpha}: ${reject ? 'H₀ is rejected, the association is statistically significant' : 'H₀ is not rejected, the differences are compatible with chance'}. ` +
+    `The biggest contribution comes from (${esc(s.xs[iMax])}, ${esc(s.ys[jMax])}): ${s.O[iMax][jMax]} observed, ${f2(s.E[iMax][jMax])} expected.`) +
+    (s.rule ? ' The expected counts are large enough for the chi-square approximation.' : ' <span class="bad">Some expected counts are too small, so this p-value is only approximate: treat a borderline result with caution.</span>');
 
-  $('sideChi').textContent = s.chi.toFixed(2); $('sideDf').textContent = s.df; $('sideP').textContent = s.p >= 0.001 ? s.p.toFixed(3) : s.p.toExponential(1);
+  $('sideChi').textContent = s.chi.toFixed(2); $('sideDf').textContent = s.df;
+  $('sideP').textContent = s.p >= 0.001 ? s.p.toFixed(3) : s.p.toExponential(1);
   $('sideVerdict').innerHTML = s.df > 0 ? (reject ? `<b class="bad">Dependent</b> at α = ${alpha}` : `<b class="good">No evidence against independence</b> at α = ${alpha}`) : '';
 
-  const interpDep = `In these data the distribution of ${esc(yn)} changes with ${esc(xn)}: ${s.xs.map((x, i) => `${pct(rates[i])} "${esc(s.ys[lastY])}" for ${esc(x)}`).join(', ')}. The gap from the independence table is too large to be explained by chance (p = ${pfmt(s.p)} &lt; ${alpha}): <b>${esc(xn)} and ${esc(yn)} are statistically dependent</b>. Cramér's V = ${f2(s.V)} indicates an association that is real but far from a deterministic link: knowing ${esc(xn)} shifts the probabilities of ${esc(yn)}, it does not fix them.`;
-  const interpInd = s.chi < 1e-9 ? `The row profiles are identical to the marginal distribution of ${esc(yn)}, so fᵢⱼ = fᵢ₊·f₊ⱼ in every cell: <b>in these data the two variables are exactly independent</b>. This table was built that way; a real sample would show at least small differences.` :
-    `The row profiles differ a little from the marginal of ${esc(yn)}, but p = ${pfmt(s.p)} ≥ ${alpha}: the differences are of the size that random sampling produces. <b>There is no evidence against independence</b>, which is not the same as proving it.`;
-  $('interp').innerHTML = s.df === 0 ? 'Only one category: independence cannot be tested.' : reject ? interpDep + (src === 'rnd' ? ' <b>But this sample was generated under independence</b>: the rejection is a type I error, which happens for about a fraction α of the seeds.' : '') : interpInd;
-  $('varTable').hidden = src === 'csv';
+  const dep = `In this table the distribution of ${esc(yn)} changes with ${esc(xn)}: ${s.xs.map((x, i) => `${pct(rates[i])} "${esc(s.ys[lastY])}" among ${esc(x)}`).join(', ')}. The distance from the independence table is too large for chance (p = ${pfmt(s.p)} &lt; ${alpha}): <b>${esc(xn)} and ${esc(yn)} are statistically dependent</b>, with Cramér's V = ${f2(s.V)}.`;
+  const ind = s.chi < 1e-9 ? `All the gaps of step 2 are 0: <b>in these data the two variables are exactly independent</b>. The table was built that way; a real sample would always show some small differences.` :
+    `There are some differences between the groups, but p = ${pfmt(s.p)} ≥ ${alpha}: they are of the size that sampling produces. <b>There is no evidence against independence</b>${s.N < 60 ? `, but with only ${s.N} records a real dependence could easily go unnoticed (step 4)` : ''}.`;
+  $('interp').innerHTML = s.df === 0 ? 'Only one category: independence cannot be tested.' : (reject ? dep + (DS.id === 'rnd' ? ' <b>Yet this sample was generated under independence</b>: this is a false alarm, which happens for about a fraction α of the seeds.' : '') : ind);
 
-  $('concl').innerHTML = `The contingency table summarises the joint distribution of two categorical variables; the margins describe each one alone, and the conditional frequencies show how one changes across the categories of the other. The expected table is the benchmark of independence, with the same margins, and χ² measures the distance from it. ` +
-    (src === 'dep' ? `For the login data χ² = ${s.chi.toFixed(2)} (df = ${s.df}, p = ${pfmt(s.p)}): the connection source and the alert level are statistically associated, mostly because of the Public Wi-Fi sessions, which have more high alerts and fewer low ones than expected. ` : '') +
-    `Statistical association is a fact about the data; a causal explanation needs more: knowledge of how the data were produced, control of confounders or an experiment.`;
-  nodeVal[0] = `${s.N} records`; nodeVal[1] = `${s.xs.length} × ${s.ys.length} table`; nodeVal[2] = `χ² = ${s.chi.toFixed(2)} · p = ${pfmt(s.p)}`; nodeVal[3] = s.df ? (reject ? 'dependent' : 'compatible with independence') : ''; drawSteps();
+  nodeVal[0] = `${s.N} records · ${xn} × ${yn}`; nodeVal[1] = `${s.xs.length} × ${s.ys.length} table`; nodeVal[2] = `χ² = ${s.chi.toFixed(2)} · p = ${pfmt(s.p)}`;
+  nodeVal[5] = s.df ? (reject ? 'dependent' : 'compatible with independence') : '';
+  drawSteps();
+}
+
+function runSampleSize() {
+  const pop = DS.id === 'csv' || DS.id === 'rnd' || DS.id === 'ind' ? LOGIN_A : A;
+  $('ssName').textContent = pop === A ? `${A.xn} × ${A.yn}` : 'login sessions';
+  const alpha = Number($('alphaIn').value), reps = Number($('repIn').value), seed = Math.round(Number($('seedIn').value)) || 0;
+  const r = pop.xs.length, c = pop.ys.length, df = (r - 1) * (c - 1), crit = critical(df, alpha);
+  const pDep = pop.O.flat().map(v => v / pop.N), pInd = pop.E.flat().map(v => v / pop.N);
+  const cum = p => p.reduce((a, v) => (a.push((a.length ? a[a.length - 1] : 0) + v), a), []);
+  const ns = [20, 30, 50, 75, 100, 150, 200, 300, 500];
+  const rate = (p, n, sd) => {
+    const cu = cum(p), rnd = mulberry32(sd), O = new Array(r * c);
+    let rej = 0, ok = 0;
+    for (let t = 0; t < reps; t++) {
+      O.fill(0);
+      for (let k = 0; k < n; k++) { const u = rnd(); let q = 0; while (q < r * c - 1 && u >= cu[q]) q++; O[q]++; }
+      const Rr = Array.from({ length: r }, (_, i) => sum(O.slice(i * c, i * c + c))), Cc = Array.from({ length: c }, (_, j) => sum(Rr.map((_, i) => O[i * c + j])));
+      if (Rr.includes(0) || Cc.includes(0)) continue;
+      ok++;
+      let chi = 0; for (let i = 0; i < r; i++) for (let j = 0; j < c; j++) { const e = Rr[i] * Cc[j] / n; chi += (O[i * c + j] - e) ** 2 / e; }
+      if (chi > crit) rej++;
+    }
+    return rej / ok;
+  };
+  const dep = ns.map((n, i) => rate(pDep, n, seed + 31 * i)), ind = ns.map((n, i) => rate(pInd, n, seed + 977 + 31 * i));
+  const W = 760, H = 270, L = 52, R = 14, T = 12, B = 36;
+  const sx = n => L + (Math.log(n) - Math.log(20)) / (Math.log(500) - Math.log(20)) * (W - L - R), sy = v => T + (1 - v) * (H - T - B);
+  let g = '';
+  for (let k = 0; k <= 5; k++) { const v = k / 5; g += `<line x1="${L}" x2="${W - R}" y1="${sy(v)}" y2="${sy(v)}" stroke="#e2e8f0"/><text x="${L - 6}" y="${sy(v) + 4}" text-anchor="end">${100 * v}%</text>`; }
+  ns.forEach(n => { g += `<line x1="${sx(n)}" x2="${sx(n)}" y1="${T}" y2="${H - B}" stroke="#e2e8f0"/><text x="${sx(n)}" y="${H - B + 14}" text-anchor="middle">${n}</text>`; });
+  g += `<line x1="${L}" x2="${W - R}" y1="${sy(alpha)}" y2="${sy(alpha)}" stroke="#0f172a" stroke-dasharray="6 4"/><line x1="${L}" x2="${W - R}" y1="${sy(0.8)}" y2="${sy(0.8)}" stroke="#64748b" stroke-dasharray="3 4"/>`;
+  const line = (v, col) => `<path d="${ns.map((n, i) => `${i ? 'L' : 'M'}${sx(n).toFixed(1)},${sy(v[i]).toFixed(1)}`).join('')}" fill="none" stroke="${col}" stroke-width="2.4"/>` + ns.map((n, i) => `<circle cx="${sx(n)}" cy="${sy(v[i])}" r="4" fill="${col}"/>`).join('');
+  g += line(dep, '#e11d48') + line(ind, '#059669');
+  if (pop.N >= 20 && pop.N <= 500) g += `<line x1="${sx(pop.N)}" x2="${sx(pop.N)}" y1="${T}" y2="${H - B}" stroke="#7c3aed" stroke-width="1.5"/><text x="${sx(pop.N) + 4}" y="${T + 40}" fill="#7c3aed" font-weight="700">real N = ${pop.N}</text>`;
+  $('chSs').innerHTML = `<svg viewBox="0 0 ${W} ${H}" font-family="Inter, sans-serif" font-size="11" fill="#475569">${g}<rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="none" stroke="#cbd5e1"/><text x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle" font-weight="700">sample size n (log scale)</text></svg>`;
+  const n80 = ns.find((n, i) => dep[i] >= 0.8), atN = (() => { const i = ns.findIndex(n => n >= pop.N); return i < 0 ? dep[dep.length - 1] : dep[i]; })();
+  $('ssNote').innerHTML = `With the proportions of ${$('ssName').textContent} (population V = ${f2(pop.V)}), the test detects the dependence in ${pct(dep[0])} of the samples of 20 records and in ${pct(dep[dep.length - 1])} of those of 500; ` +
+    (n80 ? `it needs about <b>${n80} records</b> to succeed 80% of the times. ` : 'even 500 records are not enough to reach 80%. ') +
+    `Without association the rejection rate stays between ${pct(Math.min(...ind))} and ${pct(Math.max(...ind))}, around α = ${pct(alpha)}: a false alarm costs the same at every n, while the chance of missing a real dependence shrinks as n grows. ` +
+    `This is why a non-significant result on a small table (for example the men of the arthritis trial, step 5) is not evidence of independence.`;
+  nodeVal[3] = n80 ? `80% detection from n ≈ ${n80}` : 'more than 500 records needed';
+  drawSteps();
+}
+
+function arthritisAnalysis() {
+  const recs = fromCounts(ARTH, null), alpha = Number($('alphaIn').value);
+  const pairs = (a, b, sex) => recs.filter(r => !sex || r[1] === sex).map(r => [r[a], r[b]]);
+  ART = { all: analysePairs(pairs(0, 2), 'Treatment', 'Improved'), f: analysePairs(pairs(0, 2, 'Female'), 'Treatment', 'Improved'), m: analysePairs(pairs(0, 2, 'Male'), 'Treatment', 'Improved'),
+    st: analysePairs(pairs(1, 0), 'Sex', 'Treatment'), si: analysePairs(pairs(1, 2), 'Sex', 'Improved') };
+  const row = (name, who, a) => `<tr><td><b>${name}</b></td><td>${who}</td><td class="m c">${a.N}</td><td class="m c">${a.chi.toFixed(2)}</td><td class="m c">${a.df}</td><td class="m c">${pfmt(a.p)}</td><td class="m c">${f2(a.V)}</td><td class="m c ${a.rule ? '' : 'miss'}">${a.small} of ${a.xs.length * a.ys.length}</td><td>${a.p < alpha ? '<span class="bad">dependent</span>' : '<span class="good">no evidence of dependence</span>'}</td></tr>`;
+  $('artBody').innerHTML = row('Treatment × Improved', 'all', ART.all) + row('Treatment × Improved', 'women', ART.f) + row('Treatment × Improved', 'men', ART.m) +
+    row('Sex × Treatment', 'all', ART.st) + row('Sex × Improved', 'all', ART.si);
+  $('sexTreatP').textContent = pfmt(ART.st.p);
+  const marked = a => a.O.map((r, i) => r[2] / a.R[i]);
+  const groups = [['all patients', ART.all], ['women', ART.f], ['men', ART.m]];
+  const W = 760, H = 250, L = 52, R = 14, T = 16, B = 34, gw = (W - L - R) / 3, bw = gw / 3.4, sy = v => T + (1 - v) * (H - T - B);
+  let g = '';
+  for (let k = 0; k <= 4; k++) { const v = k / 4; g += `<line x1="${L}" x2="${W - R}" y1="${sy(v)}" y2="${sy(v)}" stroke="#e2e8f0"/><text x="${L - 6}" y="${sy(v) + 4}" text-anchor="end">${100 * v}%</text>`; }
+  groups.forEach(([name, a], i) => {
+    const m = marked(a), x0 = L + i * gw + gw / 2 - bw - 3;
+    m.forEach((v, k) => { const x = x0 + k * (bw + 6); g += `<rect x="${x}" y="${sy(v)}" width="${bw}" height="${sy(0) - sy(v)}" fill="${k ? '#7c3aed' : '#94a3b8'}"/><text x="${x + bw / 2}" y="${sy(v) - 5}" text-anchor="middle" font-weight="700" fill="#0f172a">${(100 * v).toFixed(0)}% (${a.O[k][2]}/${a.R[k]})</text>`; });
+    g += `<text x="${L + i * gw + gw / 2}" y="${H - B + 16}" text-anchor="middle" font-weight="700" fill="#0f172a">${name}</text>`;
+  });
+  $('chArt').innerHTML = `<svg viewBox="0 0 ${W} ${H}" font-family="Inter, sans-serif" font-size="11" fill="#475569">${g}<rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="none" stroke="#cbd5e1"/></svg>`;
+  const ma = marked(ART.all), mf = marked(ART.f), mm = marked(ART.m);
+  $('artNote').innerHTML = `Over all 84 patients a marked improvement is much more frequent with the treatment (${pct(ma[1])}) than with the placebo (${pct(ma[0])}): χ² = ${ART.all.chi.toFixed(2)}, p = ${pfmt(ART.all.p)}, so treatment and outcome are dependent. ` +
+    `Splitting by sex gives a result I find instructive. Among the ${ART.f.N} women the association is clear (p = ${pfmt(ART.f.p)}), among the ${ART.m.N} men it is not significant (p = ${pfmt(ART.m.p)}), and yet the strength is almost the same: V = ${f2(ART.f.V)} for women and ${f2(ART.m.V)} for men. ` +
+    `What differs is the amount of evidence: the men are few, and ${ART.m.small} of their 6 expected counts are below 5, so the approximation is also weak. The right reading is not "the drug works only for women" but "there are too few men to tell". ` +
+    `Finally Sex × Treatment gives p = ${pfmt(ART.st.p)}: thanks to randomisation, women and men were spread in similar proportions between drug and placebo (${pct(ART.st.O[0][1] / ART.st.R[0])} of the women and ${pct(ART.st.O[1][1] / ART.st.R[1])} of the men were treated), so sex cannot explain the effect of the treatment.`;
+  nodeVal[4] = `women p = ${pfmt(ART.f.p)} · men p = ${pfmt(ART.m.p)}`;
+}
+
+function conclusions() {
+  $('concl').innerHTML = `The contingency table describes how two categorical variables occur together; the marginal frequencies describe each one alone, and the conditional frequencies show whether the distribution of one changes across the groups of the other. The expected table is what independence would give with the same totals, and χ² measures the distance from it. ` +
+    `In the arthritis trial, treatment and improvement are dependent (χ² = ${ART.all.chi.toFixed(2)}, df = ${ART.all.df}, p = ${pfmt(ART.all.p)}, V = ${f2(ART.all.V)}), and because the treatment was assigned at random this association can be read as an effect of the drug. ` +
+    `In my synthetic login data, source and alert level are also dependent (χ² = ${LOGIN_A.chi.toFixed(2)}, p = ${pfmt(LOGIN_A.p)}), but the data are observational, so the association alone does not tell why. ` +
+    `Two further lessons come from steps 4 and 5: a non-significant test on few records says little, because small samples miss real dependences; and the strength of an association (Cramér's V) and the evidence for it (the p-value) are different things.`;
 }
 
 function load() {
-  src = $('dsIn').value;
-  const seed = Math.round(Number($('seedIn').value)) || 0;
-  const recs = src === 'dep' ? fromCounts(DEP, seed) : src === 'ind' ? fromCounts(IND, seed) : randomIndependent(seed);
-  $('csvIn').value = toCsv(['Source', 'Alert'], recs);
-  $('dsText').innerHTML = {
-    dep: 'A synthetic dataset of 270 login sessions to a company network, invented for this exercise (not real data). The counts were chosen so that sessions from public Wi-Fi receive high alerts more often.',
-    ind: 'A synthetic table of 270 sessions built to be exactly independent: in every connection source 50% of the sessions are Low, 30% Medium and 20% High.',
-    rnd: 'A random sample of 270 sessions generated under independence: the source and the alert level are drawn separately (alerts 50% / 30% / 20% everywhere). Any association is pure chance. Change the seed to draw a new sample.'
-  }[src];
+  DS = makeDataset($('dsIn').value, Math.round(Number($('seedIn').value)) || 0);
+  $('csvIn').value = DS.names.join(',') + '\n' + DS.recs.map(r => r.join(',')).join('\n');
   $('csvMsg').textContent = '';
-  A = analyse(['Source', 'Alert'], recs);
+  fillSelectors();
+  analyseCurrent();
+}
+function analyseCurrent() {
+  DS.x = Number($('xIn').value); DS.y = Number($('yIn').value);
+  if (DS.x === DS.y) { $('csvMsg').innerHTML = '<span class="bad">choose two different columns for X and Y</span>'; return; }
+  A = analysePairs(currentPairs(), DS.names[DS.x], DS.names[DS.y]);
   render();
+  runSampleSize();
 }
 function fromTextarea() {
-  try { const { names, recs } = parseCsv($('csvIn').value); src = 'csv'; A = analyse(names, recs); $('csvMsg').innerHTML = `<span class="good">${recs.length} records analysed</span>`; $('dsText').innerHTML = 'Dataset entered by hand in the box below.'; render(); }
-  catch (e) { $('csvMsg').innerHTML = `<span class="bad">${esc(e.message)}</span>`; }
+  try {
+    const lines = $('csvIn').value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    if (lines.length < 3) throw Error('write a header line and at least two records');
+    const sep = lines[0].includes(';') ? ';' : lines[0].includes('\t') ? '\t' : ',';
+    const names = lines[0].split(sep).map(s => s.trim());
+    if (names.length < 2 || names.some(n => !n)) throw Error('the header needs at least two non-empty column names');
+    const recs = lines.slice(1).map((l, k) => {
+      const v = l.split(sep).map(s => s.trim());
+      if (v.length !== names.length || v.some(x => !x)) throw Error(`line ${k + 2} must have ${names.length} non-empty values`);
+      return v;
+    });
+    DS = { id: 'csv', names, recs, x: 0, y: 1 };
+    $('dsIn').value = 'csv';
+    fillSelectors();
+    $('csvMsg').innerHTML = `<span class="good">${recs.length} records read</span>`;
+    analyseCurrent();
+  } catch (e) { $('csvMsg').innerHTML = `<span class="bad">${esc(e.message)}</span>`; }
 }
 
 const STEPS = [
   { tag: 'Step 1', name: 'Dataset', color: '#0284c7' },
-  { tag: 'Step 2', name: 'Contingency table', color: '#059669' },
-  { tag: 'Step 3', name: 'Expected & χ²', color: '#e11d48' },
-  { tag: 'Step 4', name: 'Interpretation', color: '#7c3aed' }
+  { tag: 'Step 2', name: 'Frequencies', color: '#059669' },
+  { tag: 'Step 3', name: 'Expected & χ² test', color: '#e11d48' },
+  { tag: 'Step 4', name: 'How much data?', color: '#d97706' },
+  { tag: 'Step 5', name: 'Trial split by sex', color: '#0f766e' },
+  { tag: 'Step 6', name: 'Theory & conclusions', color: '#7c3aed' }
 ];
-const nodeVal = ['', '', '', ''];
+const nodeVal = ['', '', '', '', '', ''];
 let CUR = 0;
 function drawSteps() {
   $('steps').innerHTML = STEPS.map((s, i) => `<button class="node ${i === CUR ? 'active' : ''}" data-i="${i}">
-    <div class="n-tag" style="color:${s.color}">${s.tag}</div><div class="n-name">${s.name}</div><div class="n-val">${nodeVal[i]}</div></button>`).join('');
+    <div class="n-tag" style="color:${s.color}">${s.tag}</div><div class="n-name">${s.name}</div><div class="n-val">${esc(nodeVal[i])}</div></button>`).join('');
   $('steps').querySelectorAll('.node').forEach(b => b.onclick = () => setStage(+b.dataset.i));
 }
 function setStage(i) {
@@ -697,14 +882,30 @@ function setStage(i) {
   $('detail').scrollTop = 0;
   drawSteps();
 }
+function openSex(sex) {
+  $('dsIn').value = 'arth'; load();
+  $('fIn').value = JSON.stringify([1, sex]); analyseCurrent(); setStage(1);
+}
 
 $('dsIn').onchange = load;
-$('seedIn').onchange = load;
-$('seedRand').onclick = () => { $('seedIn').value = Math.floor(Math.random() * 1e6); if ($('dsIn').value !== 'rnd') $('dsIn').value = 'rnd'; load(); };
-$('alphaIn').onchange = () => A && render();
+$('xIn').onchange = $('yIn').onchange = () => { DS.x = Number($('xIn').value); DS.y = Number($('yIn').value); fillFilter(); analyseCurrent(); };
+$('fIn').onchange = analyseCurrent;
+$('seedIn').onchange = () => { if ($('dsIn').value === 'rnd') load(); else runSampleSize(); };
+$('seedRand').onclick = () => { $('seedIn').value = Math.floor(Math.random() * 1e6); if ($('dsIn').value === 'rnd') load(); else runSampleSize(); };
+$('alphaIn').onchange = () => { arthritisAnalysis(); render(); runSampleSize(); };
 $('btnCsv').onclick = fromTextarea;
+$('btnSs').onclick = runSampleSize;
+$('repIn').onchange = runSampleSize;
+$('btnMen').onclick = () => openSex('Male');
+$('btnWomen').onclick = () => openSex('Female');
 setStage(0);
-requestAnimationFrame(() => setTimeout(load, 30));
+requestAnimationFrame(() => setTimeout(() => {
+  const d = makeDataset('login', 0);
+  LOGIN_A = analysePairs(d.recs.map(r => [r[0], r[1]]), 'Source', 'Alert');
+  arthritisAnalysis();
+  load();
+  conclusions();
+}, 30));
 </script>
 
 </body>
